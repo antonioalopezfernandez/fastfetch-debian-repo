@@ -1,4 +1,4 @@
-name: Actualizar Repositorio de Debian (firmado + changelog + robusto)
+name: Actualizar Repositorio de Debian (firmado + changelog correcto + robusto)
 
 on:
   workflow_dispatch:
@@ -16,7 +16,8 @@ jobs:
       - name: Instalar herramientas necesarias
         run: |
           sudo apt-get update
-          # dpkg-dev: dpkg-scanpackages | apt-utils: apt-ftparchive | gnupg: gpg | fakeroot: reempaquetar | xz-utils por si acaso
+          # dpkg-dev: dpkg-scanpackages | apt-utils: apt-ftparchive
+          # gnupg: gpg | fakeroot: reempaquetar | xz-utils: utilidades comunes
           sudo apt-get install -y dpkg-dev apt-utils jq curl gnupg fakeroot xz-utils
 
       - name: Descargar la última release de Fastfetch (API GitHub)
@@ -28,6 +29,7 @@ jobs:
 
           API_URL="https://api.github.com/repos/fastfetch-cli/fastfetch/releases/latest"
 
+          # Llamada autenticada para evitar rate limits y guardar JSON
           HTTP_CODE=$(curl -sS -H "Authorization: Bearer $GH_TOKEN" \
                               -H "Accept: application/vnd.github+json" \
                               -H "User-Agent: gh-actions-fastfetch" \
@@ -50,7 +52,7 @@ jobs:
 
           mkdir -p repo
 
-          # Tomamos TODAS las URLs de assets que terminen en .deb
+          # Tomamos TODAS las URLs de assets que terminen en .deb (por si cambian nombres)
           jq -r '.assets[].browser_download_url | select(endswith(".deb"))' /tmp/release.json > /tmp/deb_urls.txt
 
           if [ ! -s /tmp/deb_urls.txt ]; then
@@ -80,7 +82,7 @@ jobs:
           echo "Contenido inicial de repo/:"
           ls -l repo || true
 
-      - name: Inyectar changelog en los .deb
+      - name: Inyectar changelog en los .deb (respeta nombre Package y md5sums)
         run: |
           set -euo pipefail
 
@@ -91,19 +93,35 @@ jobs:
           for deb in repo/*.deb; do
             echo "Procesando $deb"
             workdir="$(mktemp -d)"
+
             # Desempaqueta
             fakeroot dpkg-deb -R "$deb" "$workdir"
 
-            # Asegura carpeta de documentación
-            mkdir -p "$workdir/usr/share/doc/fastfetch"
+            # Detecta el nombre real del paquete desde DEBIAN/control
+            PKG_NAME="$(awk -F': *' '$1=="Package"{print $2; exit}' "$workdir/DEBIAN/control")"
+            if [ -z "${PKG_NAME:-}" ]; then
+              echo "ERROR: No se pudo leer 'Package:' en $deb"
+              exit 1
+            fi
+
+            DOCDIR="$workdir/usr/share/doc/$PKG_NAME"
+            mkdir -p "$DOCDIR"
 
             # Genera changelog y alias Debian
-            CHANGELOG="$workdir/usr/share/doc/fastfetch/changelog"
+            CHANGELOG="$DOCDIR/changelog"
             sed 's/\r$//' /tmp/RELEASE_BODY.txt > "$CHANGELOG"
-            printf "\n-- fastfetch %s\n" "${LAST_VERSION}" >> "$CHANGELOG"
+            printf "\n-- %s %s\n" "${PKG_NAME}" "${LAST_VERSION}" >> "$CHANGELOG"
             gzip -9f "$CHANGELOG"
-            ln -sf changelog.gz "$workdir/usr/share/doc/fastfetch/changelog.Debian.gz"
-            chmod 644 "$workdir/usr/share/doc/fastfetch/"*.gz || true
+            ln -sf changelog.gz "$DOCDIR/changelog.Debian.gz"
+            chmod 644 "$DOCDIR/"*.gz || true
+
+            # Regenera DEBIAN/md5sums para incluir los nuevos ficheros
+            (
+              cd "$workdir"
+              find . -type f ! -path './DEBIAN/*' -printf '%P\n' \
+                | LC_ALL=C sort \
+                | xargs -r md5sum > DEBIAN/md5sums
+            )
 
             # Reempaqueta y reemplaza
             fakeroot dpkg-deb -b "$workdir" "${deb}.new"
@@ -147,7 +165,7 @@ jobs:
             exit 1
           fi
 
-          # Genera BOTH 'Packages' y 'Packages.gz'
+          # Generar BOTH 'Packages' y 'Packages.gz'
           echo "Generando Packages y Packages.gz..."
           if ! dpkg-scanpackages -m . /dev/null > Packages; then
             echo "ERROR: dpkg-scanpackages falló."
@@ -160,7 +178,7 @@ jobs:
           fi
           gzip -9f -c Packages > Packages.gz
 
-          # Genera Release (incluye checksums de los ficheros presentes)
+          # Generar Release (incluye checksums de los ficheros presentes)
           apt-ftparchive release . > Release
 
           # Firmas
@@ -187,4 +205,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./repo
           publish_branch: gh-pages
-          commit_message: "Actualizar a Fastfetch ${{ env.LAST_VERSION }} (firmado, changelog, índices verificados)"
+          commit_message: "Actualizar a Fastfetch ${{ env.LAST_VERSION }} (firmado, changelog correcto, índices verificados)"
