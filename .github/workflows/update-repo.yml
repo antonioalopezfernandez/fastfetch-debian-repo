@@ -1,4 +1,4 @@
-name: Actualizar Repositorio de Debian (firmado + changelog)
+name: Actualizar Repositorio de Debian (firmado + changelog + robusto)
 
 on:
   workflow_dispatch:
@@ -16,8 +16,8 @@ jobs:
       - name: Instalar herramientas necesarias
         run: |
           sudo apt-get update
-          # dpkg-dev: dpkg-scanpackages | apt-utils: apt-ftparchive | gnupg: gpg | fakeroot: reempaquetar
-          sudo apt-get install -y dpkg-dev apt-utils jq curl gnupg fakeroot
+          # dpkg-dev: dpkg-scanpackages | apt-utils: apt-ftparchive | gnupg: gpg | fakeroot: reempaquetar | xz-utils por si acaso
+          sudo apt-get install -y dpkg-dev apt-utils jq curl gnupg fakeroot xz-utils
 
       - name: Descargar la última release de Fastfetch (API GitHub)
         id: get_release
@@ -28,7 +28,6 @@ jobs:
 
           API_URL="https://api.github.com/repos/fastfetch-cli/fastfetch/releases/latest"
 
-          # Llamada autenticada para evitar rate limits y guardar JSON
           HTTP_CODE=$(curl -sS -H "Authorization: Bearer $GH_TOKEN" \
                               -H "Accept: application/vnd.github+json" \
                               -H "User-Agent: gh-actions-fastfetch" \
@@ -51,24 +50,32 @@ jobs:
 
           mkdir -p repo
 
-          # Filtra URLs de los .deb oficiales publicados por Fastfetch
-          jq -r '.assets[].browser_download_url
-                 | select(test("fastfetch-linux-(amd64|aarch64|armv6l|armv7l)\\.deb$"))' \
-                 /tmp/release.json > /tmp/deb_urls.txt
+          # Tomamos TODAS las URLs de assets que terminen en .deb
+          jq -r '.assets[].browser_download_url | select(endswith(".deb"))' /tmp/release.json > /tmp/deb_urls.txt
 
           if [ ! -s /tmp/deb_urls.txt ]; then
-            echo "No se encontraron .deb en la release $LAST_VERSION"
+            echo "No se encontraron assets .deb en la release $LAST_VERSION"
             exit 1
           fi
 
-          # Descarga cada .deb a ./repo
+          # Descarga
+          ok=0
           while IFS= read -r url; do
+            file="repo/$(basename "$url")"
             echo "Descargando $(basename "$url") ..."
-            if ! curl -fL -o "repo/$(basename "$url")" "$url"; then
+            if curl -fL -o "$file" "$url"; then
+              ok=$((ok+1))
+            else
               echo "ADVERTENCIA: fallo al descargar $url"
-              rm -f "repo/$(basename "$url")" || true
+              rm -f "$file" || true
             fi
           done < /tmp/deb_urls.txt
+
+          echo "Se descargaron $ok archivos .deb"
+          if [ "$ok" -eq 0 ]; then
+            echo "ERROR: No se descargó ningún .deb. Abortando para evitar un Packages vacío/inexistente."
+            exit 1
+          fi
 
           echo "Contenido inicial de repo/:"
           ls -l repo || true
@@ -133,19 +140,34 @@ jobs:
           set -euo pipefail
           cd repo
 
-          # Genera BOTH 'Packages' y 'Packages.gz' (APT a veces busca el no comprimido)
-          dpkg-scanpackages -m . /dev/null > Packages
-          gzip -9f Packages > Packages.gz
+          # Verificación previa: debe haber al menos un .deb
+          count=$(ls -1 *.deb 2>/dev/null | wc -l | tr -d ' ')
+          if [ "$count" -eq 0 ]; then
+            echo "ERROR: No hay .deb en repo/. No se pueden generar índices."
+            exit 1
+          fi
 
-          # Genera Release leyendo lo que hay en el directorio
+          # Genera BOTH 'Packages' y 'Packages.gz'
+          echo "Generando Packages y Packages.gz..."
+          if ! dpkg-scanpackages -m . /dev/null > Packages; then
+            echo "ERROR: dpkg-scanpackages falló."
+            exit 1
+          fi
+          if [ ! -s Packages ]; then
+            echo "ERROR: 'Packages' está vacío. ¿Los .deb son válidos?"
+            ls -l
+            exit 1
+          fi
+          gzip -9f -c Packages > Packages.gz
+
+          # Genera Release (incluye checksums de los ficheros presentes)
           apt-ftparchive release . > Release
 
-          # Firma separada (Release.gpg)
+          # Firmas
           gpg --batch --yes --pinentry-mode loopback \
               --passphrase "$GPG_PASSPHRASE" \
               -abs -o Release.gpg Release
 
-          # Firma inline (InRelease)
           gpg --batch --yes --pinentry-mode loopback \
               --passphrase "$GPG_PASSPHRASE" \
               --clearsign -o InRelease Release
@@ -153,7 +175,10 @@ jobs:
           # Exporta la clave pública para clientes APT
           gpg --armor --export "$KEY_FP" > public.gpg
 
-          echo "Archivos generados:"
+          # Asegura que GitHub Pages no procese nada
+          echo > .nojekyll
+
+          echo "Listado final de repo/:"
           ls -l
 
       - name: Publicar en GitHub Pages
@@ -162,4 +187,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./repo
           publish_branch: gh-pages
-          commit_message: "Actualizar a Fastfetch ${{ env.LAST_VERSION }} (firmado y con changelog)"
+          commit_message: "Actualizar a Fastfetch ${{ env.LAST_VERSION }} (firmado, changelog, índices verificados)"
