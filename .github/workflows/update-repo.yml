@@ -1,4 +1,4 @@
-name: Actualizar Repositorio de Debian (firmado + changelog desde CHANGELOG.md)
+name: Actualizar Repositorio de Debian (inmutable por versión, firmado y con changelog)
 
 on:
   workflow_dispatch:
@@ -17,7 +17,7 @@ jobs:
         run: |
           sudo apt-get update
           # dpkg-dev: dpkg-scanpackages | apt-utils: apt-ftparchive
-          # gnupg: gpg | fakeroot: reempaquetar | xz-utils: utilidades comunes | jq,curl
+          # gnupg: gpg | fakeroot: reempaquetar | xz-utils/jq/curl: utilidades
           sudo apt-get install -y dpkg-dev apt-utils gnupg fakeroot xz-utils jq curl
 
       - name: Descargar la última release de Fastfetch (API GitHub)
@@ -128,7 +128,8 @@ jobs:
             SRC_TXT="/tmp/CHANGELOG_FALLBACK.txt"
           fi
 
-          # 3) Inyectar changelog en cada .deb (respeta nombre de paquete y regenera md5sums)
+          # 3) Reempaquetar cada .deb con changelog y preparar artefactos inmutables por versión
+          mkdir -p "repo/v${LAST_VERSION}"
           shopt -s nullglob
           for deb in repo/*.deb; do
             echo "Procesando $deb"
@@ -141,7 +142,6 @@ jobs:
               echo "ERROR: No se pudo leer 'Package:' en $deb"
               exit 1
             fi
-
             DOCDIR="$workdir/usr/share/doc/$PKG_NAME"
             mkdir -p "$DOCDIR"
 
@@ -170,14 +170,27 @@ jobs:
                 | xargs -r md5sum > DEBIAN/md5sums
             )
 
-            # Reempaquetar
-            fakeroot dpkg-deb -b "$workdir" "${deb}.new"
-            mv -f "${deb}.new" "$deb"
+            # Reempaquetar a un nombre inmutable por versión/arquitectura
+            NEW_DEB="${deb}.new"
+            fakeroot dpkg-deb -b "$workdir" "$NEW_DEB"
+
+            # Determinar Version/Architecture y renombrar de forma estable
+            DEB_VER="$(dpkg-deb -f "$NEW_DEB" Version)"
+            DEB_ARCH="$(dpkg-deb -f "$NEW_DEB" Architecture)"
+            # Usa el Package real para el nombre del archivo
+            SAFE_PKG="$(echo "$PKG_NAME" | tr '[:upper:]' '[:lower:]')"
+            FINAL_NAME="${SAFE_PKG}_${DEB_VER}-repo1_${DEB_ARCH}.deb"
+
+            mv -f "$NEW_DEB" "repo/v${LAST_VERSION}/${FINAL_NAME}"
+
+            # Borra el .deb original descargado para que no lo indexe
+            rm -f "$deb"
             rm -rf "$workdir"
           done
           shopt -u nullglob
 
-          echo "Changelogs inyectados."
+          echo "Artefactos inmutables en repo/v${LAST_VERSION}:"
+          ls -l "repo/v${LAST_VERSION}" || true
 
       - name: Importar clave GPG (para firmar Release)
         env:
@@ -197,37 +210,29 @@ jobs:
           fi
           echo "KEY_FP=$KEY_FP" >> $GITHUB_ENV
 
-      - name: Crear índices y firmar el repositorio
+      - name: Crear índices (inmutables por versión) y firmar el repositorio
         env:
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
           set -euo pipefail
           cd repo
 
-          # Verificación previa: debe haber al menos un .deb
-          count=$(ls -1 *.deb 2>/dev/null | wc -l | tr -d ' ')
+          # Verificación: debe haber .deb bajo v${LAST_VERSION}/
+          count=$(find "v${LAST_VERSION}" -maxdepth 1 -type f -name '*.deb' | wc -l | tr -d ' ')
           if [ "$count" -eq 0 ]; then
-            echo "ERROR: No hay .deb en repo/. No se pueden generar índices."
+            echo "ERROR: No hay .deb reempaquetados en v${LAST_VERSION}/"
+            ls -R
             exit 1
           fi
 
-          # Generar BOTH 'Packages' y 'Packages.gz'
-          echo "Generando Packages y Packages.gz..."
-          if ! dpkg-scanpackages -m . /dev/null > Packages; then
-            echo "ERROR: dpkg-scanpackages falló."
-            exit 1
-          fi
-          if [ ! -s Packages ]; then
-            echo "ERROR: 'Packages' está vacío. ¿Los .deb son válidos?"
-            ls -l
-            exit 1
-          fi
+          # Generar BOTH 'Packages' y 'Packages.gz' para rutas con prefijo v${LAST_VERSION}/
+          # Importante: el primer argumento a dpkg-scanpackages es el directorio donde están los .deb
+          dpkg-scanpackages -m "v${LAST_VERSION}" /dev/null > Packages
           gzip -9f -c Packages > Packages.gz
 
-          # Generar Release (incluye checksums de los ficheros presentes)
+          # Generar Release / InRelease / Release.gpg
           apt-ftparchive release . > Release
 
-          # Firmas
           gpg --batch --yes --pinentry-mode loopback \
               --passphrase "$GPG_PASSPHRASE" \
               -abs -o Release.gpg Release
@@ -239,11 +244,13 @@ jobs:
           # Exporta la clave pública para clientes APT
           gpg --armor --export "$KEY_FP" > public.gpg
 
-          # Asegura que GitHub Pages no procese nada
+          # Evita procesamiento de Jekyll
           echo > .nojekyll
 
           echo "Listado final de repo/:"
           ls -l
+          echo "Listado de repo/v${LAST_VERSION}:"
+          ls -l "v${LAST_VERSION}"
 
       - name: Publicar en GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
@@ -251,4 +258,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./repo
           publish_branch: gh-pages
-          commit_message: "Actualizar a Fastfetch ${{ env.LAST_VERSION }} (firmado, changelog desde CHANGELOG.md, índices verificados)"
+          commit_message: "Actualizar a Fastfetch ${{ env.LAST_VERSION }} (inmutable por versión, firmado, changelog, índices verificados)"
