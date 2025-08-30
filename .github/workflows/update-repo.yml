@@ -1,261 +1,170 @@
-name: Actualizar Repositorio de Debian (inmutable por versión, firmado y con changelog)
+# Nombre descriptivo del workflow
+name: Actualizar Repositorio de Debian (inmutable + firmado + changelog)
 
 on:
+  # Permite ejecutarlo manualmente desde la interfaz de GitHub Actions
   workflow_dispatch:
+  # Se ejecuta automáticamente todos los días a las 02:00 UTC
   schedule:
-    - cron: "0 2 * * *" # Todos los días a las 02:00 UTC
+    - cron: "0 2 * * *"
 
 jobs:
   build-and-publish:
+    # El job se ejecuta en una máquina virtual con Ubuntu
     runs-on: ubuntu-latest
 
     steps:
+      # 1. Descarga el código fuente de este repo (necesario para publicar en gh-pages)
       - name: Checkout repositorio
         uses: actions/checkout@v3
 
+      # 2. Instala las herramientas necesarias para empaquetar y firmar
       - name: Instalar herramientas necesarias
         run: |
           sudo apt-get update
-          # dpkg-dev: dpkg-scanpackages | apt-utils: apt-ftparchive
-          # gnupg: gpg | fakeroot: reempaquetar | xz-utils/jq/curl: utilidades
-          sudo apt-get install -y dpkg-dev apt-utils gnupg fakeroot xz-utils jq curl
+          sudo apt-get install -y \
+            dpkg-dev apt-utils gnupg fakeroot xz-utils jq curl
+          # dpkg-dev/apt-utils → generar Packages y Release
+          # gnupg → firmar con GPG
+          # fakeroot → reempaquetar .deb
+          # jq/curl → parsear JSON y descargar
 
+      # 3. Obtiene la última release de Fastfetch desde la API de GitHub y descarga los .deb
       - name: Descargar la última release de Fastfetch (API GitHub)
         id: get_release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-
           API_URL="https://api.github.com/repos/fastfetch-cli/fastfetch/releases/latest"
 
-          # Llamada autenticada para evitar rate limits y guardar JSON
-          HTTP_CODE=$(curl -sS -H "Authorization: Bearer $GH_TOKEN" \
-                              -H "Accept: application/vnd.github+json" \
-                              -H "User-Agent: gh-actions-fastfetch" \
-                              -w "%{http_code}" -o /tmp/release.json "$API_URL")
+          # Descarga JSON de la última release
+          curl -sS -H "Authorization: Bearer $GH_TOKEN" \
+               -H "Accept: application/vnd.github+json" \
+               -H "User-Agent: gh-actions-fastfetch" \
+               -o /tmp/release.json "$API_URL"
 
-          if [ "$HTTP_CODE" != "200" ]; then
-            echo "Fallo al pedir la API (HTTP $HTTP_CODE):"
-            cat /tmp/release.json || true
-            exit 1
-          fi
-
-          LAST_VERSION=$(jq -r '.tag_name // empty' /tmp/release.json)
-          if [ -z "${LAST_VERSION:-}" ]; then
-            echo "La respuesta no contiene tag_name:"
-            cat /tmp/release.json
-            exit 1
-          fi
-          echo "Se encontró la versión más reciente: $LAST_VERSION"
+          # Extrae el tag (ej: v2.51.1)
+          LAST_VERSION=$(jq -r '.tag_name' /tmp/release.json)
           echo "LAST_VERSION=$LAST_VERSION" >> $GITHUB_ENV
 
+          # Crea carpeta para los .deb
           mkdir -p repo
 
-          # Tomamos TODAS las URLs de assets que terminen en .deb (por si cambian nombres)
+          # Extrae todas las URLs de assets que terminen en .deb
           jq -r '.assets[].browser_download_url | select(endswith(".deb"))' /tmp/release.json > /tmp/deb_urls.txt
 
-          if [ ! -s /tmp/deb_urls.txt ]; then
-            echo "No se encontraron assets .deb en la release $LAST_VERSION"
-            exit 1
-          fi
-
-          # Descarga
-          ok=0
+          # Descarga cada .deb
           while IFS= read -r url; do
-            file="repo/$(basename "$url")"
-            echo "Descargando $(basename "$url") ..."
-            if curl -fL -o "$file" "$url"; then
-              ok=$((ok+1))
-            else
-              echo "ADVERTENCIA: fallo al descargar $url"
-              rm -f "$file" || true
-            fi
+            curl -fL -o "repo/$(basename "$url")" "$url"
           done < /tmp/deb_urls.txt
 
-          echo "Se descargaron $ok archivos .deb"
-          if [ "$ok" -eq 0 ]; then
-            echo "ERROR: No se descargó ningún .deb. Abortando para evitar un Packages vacío/inexistente."
-            exit 1
-          fi
-
-          echo "Contenido inicial de repo/:"
-          ls -l repo || true
-
-      - name: Inyectar changelog en los .deb (extraído de CHANGELOG.md del tag)
+      # 4. Inyecta el changelog dentro de cada .deb (para apt-listchanges)
+      - name: Inyectar changelog en los .deb (desde CHANGELOG.md)
         run: |
           set -euo pipefail
+          # Intenta bajar el CHANGELOG.md del tag correspondiente
+          curl -fsSL "https://raw.githubusercontent.com/fastfetch-cli/fastfetch/${LAST_VERSION}/CHANGELOG.md" -o /tmp/CHANGELOG.md \
+            || curl -fsSL "https://raw.githubusercontent.com/fastfetch-cli/fastfetch/main/CHANGELOG.md" -o /tmp/CHANGELOG.md
 
-          # 1) Descargar el CHANGELOG.md del tag (fallback a main si no existe en el tag)
-          RAW_TAG_URL="https://raw.githubusercontent.com/fastfetch-cli/fastfetch/${LAST_VERSION}/CHANGELOG.md"
-          RAW_MAIN_URL="https://raw.githubusercontent.com/fastfetch-cli/fastfetch/main/CHANGELOG.md"
+          # Extrae solo la sección de la versión actual
+          ver="${LAST_VERSION#v}"
+          awk -v ver="$ver" '
+            BEGIN{printit=0}
+            /^##[[:space:]]/ {
+              if ($0 ~ ver) { printit=1; print; next }
+              if (printit) { exit }
+            }
+            { if (printit) print }
+          ' /tmp/CHANGELOG.md > /tmp/CHANGELOG_SECTION.md
 
-          if curl -fsSL "$RAW_TAG_URL" -o /tmp/CHANGELOG.md; then
-            echo "Usando CHANGELOG.md de ${LAST_VERSION}"
-          elif curl -fsSL "$RAW_MAIN_URL" -o /tmp/CHANGELOG.md; then
-            echo "Usando CHANGELOG.md de main (no se encontró en el tag)"
-          else
-            echo "No se pudo obtener CHANGELOG.md; usaré el cuerpo de la release como último recurso."
-            jq -r '.body // "Upstream release ${LAST_VERSION}"' /tmp/release.json > /tmp/CHANGELOG_FALLBACK.txt
-          fi
-
-          # 2) Extraer solo la sección correspondiente a la versión (soporta '## vX.Y.Z' / '## X.Y.Z' / '## [X.Y.Z]')
-          if [ -f /tmp/CHANGELOG.md ]; then
-            ver="${LAST_VERSION#v}"  # sin 'v' delante
-            awk -v ver="$ver" '
-              BEGIN{printit=0}
-              function is_ver_line(line,   t) {
-                t=line
-                gsub(/\[/,"",t); gsub(/\]/,"",t)
-                gsub(/^##[[:space:]]+/,"",t)
-                gsub(/^v/,"",t)
-                sub(/[[:space:]].*$/,"",t)
-                return t==ver
-              }
-              /^##[[:space:]]/ {
-                if (is_ver_line($0)) { printit=1; print; next }
-                if (printit) { exit }
-              }
-              { if (printit) print }
-            ' /tmp/CHANGELOG.md > /tmp/CHANGELOG_SECTION.md || true
-
-            if [ ! -s /tmp/CHANGELOG_SECTION.md ]; then
-              echo "No se encontró sección específica para ${LAST_VERSION}; usando primeras 200 líneas."
-              head -n 200 /tmp/CHANGELOG.md > /tmp/CHANGELOG_SECTION.md
-            fi
-            SRC_TXT="/tmp/CHANGELOG_SECTION.md"
-          else
-            SRC_TXT="/tmp/CHANGELOG_FALLBACK.txt"
-          fi
-
-          # 3) Reempaquetar cada .deb con changelog y preparar artefactos inmutables por versión
           mkdir -p "repo/v${LAST_VERSION}"
           shopt -s nullglob
           for deb in repo/*.deb; do
-            echo "Procesando $deb"
             workdir="$(mktemp -d)"
+            # Desempaqueta el .deb
             fakeroot dpkg-deb -R "$deb" "$workdir"
+            PKG_NAME=$(awk -F': *' '$1=="Package"{print $2; exit}' "$workdir/DEBIAN/control")
 
-            # Nombre real del paquete desde control
-            PKG_NAME="$(awk -F': *' '$1=="Package"{print $2; exit}' "$workdir/DEBIAN/control")"
-            if [ -z "${PKG_NAME:-}" ]; then
-              echo "ERROR: No se pudo leer 'Package:' en $deb"
-              exit 1
-            fi
+            # Crea el changelog comprimido
             DOCDIR="$workdir/usr/share/doc/$PKG_NAME"
             mkdir -p "$DOCDIR"
+            gzip -9c /tmp/CHANGELOG_SECTION.md > "$DOCDIR/changelog.Debian.gz"
+            cp "$DOCDIR/changelog.Debian.gz" "$DOCDIR/changelog.gz"
+            cp "$DOCDIR/changelog.Debian.gz" "$DOCDIR/NEWS.Debian.gz"
 
-            # Contenido final: cabecera + sección extraída
-            TMP="$(mktemp)"
-            {
-              echo "Changelog for $PKG_NAME ${LAST_VERSION}"
-              echo
-              cat "$SRC_TXT"
-              echo
-              printf -- "-- %s %s\n" "$PKG_NAME" "${LAST_VERSION}"
-            } > "$TMP"
-
-            # Crea los 3 archivos que apt-listchanges suele mirar
-            gzip -9c "$TMP" > "$DOCDIR/changelog.Debian.gz"
-            cp -a "$DOCDIR/changelog.Debian.gz" "$DOCDIR/changelog.gz"
-            cp -a "$DOCDIR/changelog.Debian.gz" "$DOCDIR/NEWS.Debian.gz"
-            chmod 644 "$DOCDIR/"*.gz || true
-            rm -f "$TMP"
-
-            # Regenerar md5sums
-            (
-              cd "$workdir"
+            # Regenera md5sums
+            ( cd "$workdir"
               find . -type f ! -path './DEBIAN/*' -printf '%P\n' \
                 | LC_ALL=C sort \
-                | xargs -r md5sum > DEBIAN/md5sums
-            )
+                | xargs -r md5sum > DEBIAN/md5sums )
 
-            # Reempaquetar a un nombre inmutable por versión/arquitectura
+            # Reempaqueta con nombre inmutable (evita colisiones)
             NEW_DEB="${deb}.new"
             fakeroot dpkg-deb -b "$workdir" "$NEW_DEB"
+            DEB_VER=$(dpkg-deb -f "$NEW_DEB" Version)
+            DEB_ARCH=$(dpkg-deb -f "$NEW_DEB" Architecture)
+            FINAL_NAME="${PKG_NAME}_${DEB_VER}-repo1_${DEB_ARCH}.deb"
+            mv "$NEW_DEB" "repo/v${LAST_VERSION}/$FINAL_NAME"
 
-            # Determinar Version/Architecture y renombrar de forma estable
-            DEB_VER="$(dpkg-deb -f "$NEW_DEB" Version)"
-            DEB_ARCH="$(dpkg-deb -f "$NEW_DEB" Architecture)"
-            # Usa el Package real para el nombre del archivo
-            SAFE_PKG="$(echo "$PKG_NAME" | tr '[:upper:]' '[:lower:]')"
-            FINAL_NAME="${SAFE_PKG}_${DEB_VER}-repo1_${DEB_ARCH}.deb"
-
-            mv -f "$NEW_DEB" "repo/v${LAST_VERSION}/${FINAL_NAME}"
-
-            # Borra el .deb original descargado para que no lo indexe
             rm -f "$deb"
             rm -rf "$workdir"
           done
           shopt -u nullglob
 
-          echo "Artefactos inmutables en repo/v${LAST_VERSION}:"
-          ls -l "repo/v${LAST_VERSION}" || true
-
-      - name: Importar clave GPG (para firmar Release)
+      # 5. Importa la clave GPG para firmar el Release
+      - name: Importar clave GPG
         env:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
         run: |
-          set -euo pipefail
           echo "$GPG_PRIVATE_KEY" | gpg --batch --import
-          # Evita prompt interactivo
           mkdir -p ~/.gnupg
           echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
           chmod 600 ~/.gnupg/gpg.conf
-          # Fingerprint de la clave importada
           KEY_FP=$(gpg --list-secret-keys --with-colons | awk -F: '/^sec:/ {print $5; exit}')
-          if [ -z "${KEY_FP:-}" ]; then
-            echo "No se encontró clave GPG importada."
-            exit 1
-          fi
           echo "KEY_FP=$KEY_FP" >> $GITHUB_ENV
 
-      - name: Crear índices (inmutables por versión) y firmar el repositorio
+      # 6. Genera índices del repo y los firma
+      - name: Crear índices y firmar
         env:
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
-          set -euo pipefail
           cd repo
-
-          # Verificación: debe haber .deb bajo v${LAST_VERSION}/
-          count=$(find "v${LAST_VERSION}" -maxdepth 1 -type f -name '*.deb' | wc -l | tr -d ' ')
-          if [ "$count" -eq 0 ]; then
-            echo "ERROR: No hay .deb reempaquetados en v${LAST_VERSION}/"
-            ls -R
-            exit 1
-          fi
-
-          # Generar BOTH 'Packages' y 'Packages.gz' para rutas con prefijo v${LAST_VERSION}/
-          # Importante: el primer argumento a dpkg-scanpackages es el directorio donde están los .deb
           dpkg-scanpackages -m "v${LAST_VERSION}" /dev/null > Packages
           gzip -9f -c Packages > Packages.gz
-
-          # Generar Release / InRelease / Release.gpg
           apt-ftparchive release . > Release
 
+          # Firma Release → Release.gpg e InRelease
           gpg --batch --yes --pinentry-mode loopback \
               --passphrase "$GPG_PASSPHRASE" \
               -abs -o Release.gpg Release
-
           gpg --batch --yes --pinentry-mode loopback \
               --passphrase "$GPG_PASSPHRASE" \
               --clearsign -o InRelease Release
 
-          # Exporta la clave pública para clientes APT
+          # Exporta la clave pública
           gpg --armor --export "$KEY_FP" > public.gpg
 
-          # Evita procesamiento de Jekyll
+          # Evita que GitHub Pages modifique nada
           echo > .nojekyll
 
-          echo "Listado final de repo/:"
-          ls -l
-          echo "Listado de repo/v${LAST_VERSION}:"
-          ls -l "v${LAST_VERSION}"
+      # 7. Verificación: todos los Filename en Packages existen
+      - name: Sanity check: Packages vs ficheros
+        run: |
+          cd repo
+          awk '/^Filename: /{print $2}' Packages > /tmp/files.txt
+          while IFS= read -r f; do
+            if [ ! -f "$f" ]; then
+              echo "ERROR: falta $f"
+              exit 1
+            fi
+          done < /tmp/files.txt
 
+      # 8. Publica la carpeta repo/ en la rama gh-pages (GitHub Pages)
       - name: Publicar en GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./repo
           publish_branch: gh-pages
-          commit_message: "Actualizar a Fastfetch ${{ env.LAST_VERSION }} (inmutable por versión, firmado, changelog, índices verificados)"
+          commit_message: "Actualizar a Fastfetch ${{ env.LAST_VERSION }} (inmutable, firmado, changelog)"
