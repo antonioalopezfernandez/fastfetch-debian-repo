@@ -8,28 +8,19 @@ on:
   schedule:
     - cron: "0 2 * * *"
 
-concurrency:
-  group: apt-repo-fastfetch
-  cancel-in-progress: false
-
 jobs:
   build-and-publish:
     # El job se ejecuta en una máquina virtual con Ubuntu
     runs-on: ubuntu-latest
 
-    # Solo necesita permiso para publicar en gh-pages
-    permissions:
-      contents: write
-
     steps:
       # 1. Descarga el código fuente de este repo (necesario para publicar en gh-pages)
       - name: Checkout repositorio
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       # 2. Instala las herramientas necesarias para empaquetar y firmar
       - name: Instalar herramientas necesarias
         run: |
-          set -euo pipefail
           sudo apt-get update
           sudo apt-get install -y \
             dpkg-dev apt-utils gnupg fakeroot xz-utils jq curl
@@ -58,7 +49,7 @@ jobs:
           echo "LAST_VERSION=$LAST_VERSION" >> $GITHUB_ENV
 
           # Crea carpeta para los .deb
-          mkdir -p "repo/v${LAST_VERSION}"
+          mkdir -p repo
 
           # Extrae todas las URLs de assets que terminen en .deb
           jq -r '.assets[].browser_download_url | select(endswith(".deb"))' /tmp/release.json > /tmp/deb_urls.txt
@@ -126,11 +117,10 @@ jobs:
         env:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
         run: |
-          set -euo pipefail
-          mkdir -p ~/.gnupg
-          chmod 700 ~/.gnupg
-          echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
           echo "$GPG_PRIVATE_KEY" | gpg --batch --import
+          mkdir -p ~/.gnupg
+          echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
+          chmod 600 ~/.gnupg/gpg.conf
           KEY_FP=$(gpg --list-secret-keys --with-colons | awk -F: '/^sec:/ {print $5; exit}')
           echo "KEY_FP=$KEY_FP" >> $GITHUB_ENV
 
@@ -139,7 +129,6 @@ jobs:
         env:
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
-          set -euo pipefail
           cd repo
           dpkg-scanpackages -m "v${LAST_VERSION}" /dev/null > Packages
           gzip -9f -c Packages > Packages.gz
@@ -162,7 +151,6 @@ jobs:
       # 7. Verificación: todos los Filename en Packages existen
       - name: Sanity check - Packages vs ficheros
         run: |
-          set -euo pipefail
           cd repo
           awk '/^Filename: /{print $2}' Packages > /tmp/files.txt
           while IFS= read -r f; do
@@ -174,7 +162,7 @@ jobs:
 
       # 8. Publica la carpeta repo/ en la rama gh-pages (GitHub Pages)
       - name: Publicar en GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
+        uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./repo
