@@ -149,7 +149,7 @@ jobs:
           echo > .nojekyll
 
       # 7. Verificación: todos los Filename en Packages existen
-      - name: Sanity check: Packages vs ficheros
+      - name: Sanity check - Packages vs ficheros
         run: |
           cd repo
           awk '/^Filename: /{print $2}' Packages > /tmp/files.txt
