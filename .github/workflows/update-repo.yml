@@ -1,4 +1,4 @@
-name: Actualizar Repositorio de Debian (firmado + changelog correcto + robusto)
+name: Actualizar Repositorio de Debian (firmado + changelog desde CHANGELOG.md)
 
 on:
   workflow_dispatch:
@@ -17,8 +17,8 @@ jobs:
         run: |
           sudo apt-get update
           # dpkg-dev: dpkg-scanpackages | apt-utils: apt-ftparchive
-          # gnupg: gpg | fakeroot: reempaquetar | xz-utils: utilidades comunes
-          sudo apt-get install -y dpkg-dev apt-utils jq curl gnupg fakeroot xz-utils
+          # gnupg: gpg | fakeroot: reempaquetar | xz-utils: utilidades comunes | jq,curl
+          sudo apt-get install -y dpkg-dev apt-utils gnupg fakeroot xz-utils jq curl
 
       - name: Descargar la última release de Fastfetch (API GitHub)
         id: get_release
@@ -82,22 +82,60 @@ jobs:
           echo "Contenido inicial de repo/:"
           ls -l repo || true
 
-      - name: Inyectar changelog en los .deb (respeta nombre Package y md5sums)
+      - name: Inyectar changelog en los .deb (extraído de CHANGELOG.md del tag)
         run: |
           set -euo pipefail
 
-          # Usa el cuerpo de la release como changelog
-          jq -r '.body // "Upstream release ${LAST_VERSION}"' /tmp/release.json > /tmp/RELEASE_BODY.txt
+          # 1) Descargar el CHANGELOG.md del tag (fallback a main si no existe en el tag)
+          RAW_TAG_URL="https://raw.githubusercontent.com/fastfetch-cli/fastfetch/${LAST_VERSION}/CHANGELOG.md"
+          RAW_MAIN_URL="https://raw.githubusercontent.com/fastfetch-cli/fastfetch/main/CHANGELOG.md"
 
+          if curl -fsSL "$RAW_TAG_URL" -o /tmp/CHANGELOG.md; then
+            echo "Usando CHANGELOG.md de ${LAST_VERSION}"
+          elif curl -fsSL "$RAW_MAIN_URL" -o /tmp/CHANGELOG.md; then
+            echo "Usando CHANGELOG.md de main (no se encontró en el tag)"
+          else
+            echo "No se pudo obtener CHANGELOG.md; usaré el cuerpo de la release como último recurso."
+            jq -r '.body // "Upstream release ${LAST_VERSION}"' /tmp/release.json > /tmp/CHANGELOG_FALLBACK.txt
+          fi
+
+          # 2) Extraer solo la sección correspondiente a la versión (soporta '## vX.Y.Z' / '## X.Y.Z' / '## [X.Y.Z]')
+          if [ -f /tmp/CHANGELOG.md ]; then
+            ver="${LAST_VERSION#v}"  # sin 'v' delante
+            awk -v ver="$ver" '
+              BEGIN{printit=0}
+              function is_ver_line(line,   t) {
+                t=line
+                gsub(/\[/,"",t); gsub(/\]/,"",t)
+                gsub(/^##[[:space:]]+/,"",t)
+                gsub(/^v/,"",t)
+                sub(/[[:space:]].*$/,"",t)
+                return t==ver
+              }
+              /^##[[:space:]]/ {
+                if (is_ver_line($0)) { printit=1; print; next }
+                if (printit) { exit }
+              }
+              { if (printit) print }
+            ' /tmp/CHANGELOG.md > /tmp/CHANGELOG_SECTION.md || true
+
+            if [ ! -s /tmp/CHANGELOG_SECTION.md ]; then
+              echo "No se encontró sección específica para ${LAST_VERSION}; usando primeras 200 líneas."
+              head -n 200 /tmp/CHANGELOG.md > /tmp/CHANGELOG_SECTION.md
+            fi
+            SRC_TXT="/tmp/CHANGELOG_SECTION.md"
+          else
+            SRC_TXT="/tmp/CHANGELOG_FALLBACK.txt"
+          fi
+
+          # 3) Inyectar changelog en cada .deb (respeta nombre de paquete y regenera md5sums)
           shopt -s nullglob
           for deb in repo/*.deb; do
             echo "Procesando $deb"
             workdir="$(mktemp -d)"
-
-            # Desempaqueta
             fakeroot dpkg-deb -R "$deb" "$workdir"
 
-            # Detecta el nombre real del paquete desde DEBIAN/control
+            # Nombre real del paquete desde control
             PKG_NAME="$(awk -F': *' '$1=="Package"{print $2; exit}' "$workdir/DEBIAN/control")"
             if [ -z "${PKG_NAME:-}" ]; then
               echo "ERROR: No se pudo leer 'Package:' en $deb"
@@ -107,15 +145,24 @@ jobs:
             DOCDIR="$workdir/usr/share/doc/$PKG_NAME"
             mkdir -p "$DOCDIR"
 
-            # Genera changelog y alias Debian
-            CHANGELOG="$DOCDIR/changelog"
-            sed 's/\r$//' /tmp/RELEASE_BODY.txt > "$CHANGELOG"
-            printf "\n-- %s %s\n" "${PKG_NAME}" "${LAST_VERSION}" >> "$CHANGELOG"
-            gzip -9f "$CHANGELOG"
-            ln -sf changelog.gz "$DOCDIR/changelog.Debian.gz"
-            chmod 644 "$DOCDIR/"*.gz || true
+            # Contenido final: cabecera + sección extraída
+            TMP="$(mktemp)"
+            {
+              echo "Changelog for $PKG_NAME ${LAST_VERSION}"
+              echo
+              cat "$SRC_TXT"
+              echo
+              printf -- "-- %s %s\n" "$PKG_NAME" "${LAST_VERSION}"
+            } > "$TMP"
 
-            # Regenera DEBIAN/md5sums para incluir los nuevos ficheros
+            # Crea los 3 archivos que apt-listchanges suele mirar
+            gzip -9c "$TMP" > "$DOCDIR/changelog.Debian.gz"
+            cp -a "$DOCDIR/changelog.Debian.gz" "$DOCDIR/changelog.gz"
+            cp -a "$DOCDIR/changelog.Debian.gz" "$DOCDIR/NEWS.Debian.gz"
+            chmod 644 "$DOCDIR/"*.gz || true
+            rm -f "$TMP"
+
+            # Regenerar md5sums
             (
               cd "$workdir"
               find . -type f ! -path './DEBIAN/*' -printf '%P\n' \
@@ -123,15 +170,14 @@ jobs:
                 | xargs -r md5sum > DEBIAN/md5sums
             )
 
-            # Reempaqueta y reemplaza
+            # Reempaquetar
             fakeroot dpkg-deb -b "$workdir" "${deb}.new"
             mv -f "${deb}.new" "$deb"
             rm -rf "$workdir"
           done
           shopt -u nullglob
 
-          echo "Contenido de repo/ tras inyección de changelog:"
-          ls -l repo || true
+          echo "Changelogs inyectados."
 
       - name: Importar clave GPG (para firmar Release)
         env:
@@ -205,4 +251,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./repo
           publish_branch: gh-pages
-          commit_message: "Actualizar a Fastfetch ${{ env.LAST_VERSION }} (firmado, changelog correcto, índices verificados)"
+          commit_message: "Actualizar a Fastfetch ${{ env.LAST_VERSION }} (firmado, changelog desde CHANGELOG.md, índices verificados)"
