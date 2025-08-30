@@ -1,4 +1,4 @@
-name: Actualizar Repositorio de Debian (firmado GPG y con Packages)
+name: Actualizar Repositorio de Debian (firmado + changelog)
 
 on:
   workflow_dispatch:
@@ -16,9 +16,10 @@ jobs:
       - name: Instalar herramientas necesarias
         run: |
           sudo apt-get update
-          sudo apt-get install -y dpkg-dev apt-utils jq curl gnupg
+          # dpkg-dev: dpkg-scanpackages | apt-utils: apt-ftparchive | gnupg: gpg | fakeroot: reempaquetar
+          sudo apt-get install -y dpkg-dev apt-utils jq curl gnupg fakeroot
 
-      - name: Descargar la última release de Fastfetch
+      - name: Descargar la última release de Fastfetch (API GitHub)
         id: get_release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -27,6 +28,7 @@ jobs:
 
           API_URL="https://api.github.com/repos/fastfetch-cli/fastfetch/releases/latest"
 
+          # Llamada autenticada para evitar rate limits y guardar JSON
           HTTP_CODE=$(curl -sS -H "Authorization: Bearer $GH_TOKEN" \
                               -H "Accept: application/vnd.github+json" \
                               -H "User-Agent: gh-actions-fastfetch" \
@@ -49,7 +51,7 @@ jobs:
 
           mkdir -p repo
 
-          # Descarga directa de los .deb publicados por Fastfetch
+          # Filtra URLs de los .deb oficiales publicados por Fastfetch
           jq -r '.assets[].browser_download_url
                  | select(test("fastfetch-linux-(amd64|aarch64|armv6l|armv7l)\\.deb$"))' \
                  /tmp/release.json > /tmp/deb_urls.txt
@@ -59,6 +61,7 @@ jobs:
             exit 1
           fi
 
+          # Descarga cada .deb a ./repo
           while IFS= read -r url; do
             echo "Descargando $(basename "$url") ..."
             if ! curl -fL -o "repo/$(basename "$url")" "$url"; then
@@ -67,17 +70,55 @@ jobs:
             fi
           done < /tmp/deb_urls.txt
 
-          echo "Contenido de repo/:"
+          echo "Contenido inicial de repo/:"
           ls -l repo || true
 
-      - name: Importar clave GPG
+      - name: Inyectar changelog en los .deb
+        run: |
+          set -euo pipefail
+
+          # Usa el cuerpo de la release como changelog
+          jq -r '.body // "Upstream release ${LAST_VERSION}"' /tmp/release.json > /tmp/RELEASE_BODY.txt
+
+          shopt -s nullglob
+          for deb in repo/*.deb; do
+            echo "Procesando $deb"
+            workdir="$(mktemp -d)"
+            # Desempaqueta
+            fakeroot dpkg-deb -R "$deb" "$workdir"
+
+            # Asegura carpeta de documentación
+            mkdir -p "$workdir/usr/share/doc/fastfetch"
+
+            # Genera changelog y alias Debian
+            CHANGELOG="$workdir/usr/share/doc/fastfetch/changelog"
+            sed 's/\r$//' /tmp/RELEASE_BODY.txt > "$CHANGELOG"
+            printf "\n-- fastfetch %s\n" "${LAST_VERSION}" >> "$CHANGELOG"
+            gzip -9f "$CHANGELOG"
+            ln -sf changelog.gz "$workdir/usr/share/doc/fastfetch/changelog.Debian.gz"
+            chmod 644 "$workdir/usr/share/doc/fastfetch/"*.gz || true
+
+            # Reempaqueta y reemplaza
+            fakeroot dpkg-deb -b "$workdir" "${deb}.new"
+            mv -f "${deb}.new" "$deb"
+            rm -rf "$workdir"
+          done
+          shopt -u nullglob
+
+          echo "Contenido de repo/ tras inyección de changelog:"
+          ls -l repo || true
+
+      - name: Importar clave GPG (para firmar Release)
         env:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
         run: |
           set -euo pipefail
           echo "$GPG_PRIVATE_KEY" | gpg --batch --import
+          # Evita prompt interactivo
+          mkdir -p ~/.gnupg
           echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
           chmod 600 ~/.gnupg/gpg.conf
+          # Fingerprint de la clave importada
           KEY_FP=$(gpg --list-secret-keys --with-colons | awk -F: '/^sec:/ {print $5; exit}')
           if [ -z "${KEY_FP:-}" ]; then
             echo "No se encontró clave GPG importada."
@@ -85,30 +126,31 @@ jobs:
           fi
           echo "KEY_FP=$KEY_FP" >> $GITHUB_ENV
 
-      - name: Crear y firmar el repositorio de Debian
+      - name: Crear índices y firmar el repositorio
         env:
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
           set -euo pipefail
           cd repo
 
-          # Generar índices: BOTH 'Packages' y 'Packages.gz' antes del Release
+          # Genera BOTH 'Packages' y 'Packages.gz' (APT a veces busca el no comprimido)
           dpkg-scanpackages -m . /dev/null > Packages
-          gzip -9c Packages > Packages.gz
+          gzip -9f Packages > Packages.gz
 
-          # Generar Release (leerá los ficheros presentes)
+          # Genera Release leyendo lo que hay en el directorio
           apt-ftparchive release . > Release
 
-          # Firmas
+          # Firma separada (Release.gpg)
           gpg --batch --yes --pinentry-mode loopback \
               --passphrase "$GPG_PASSPHRASE" \
               -abs -o Release.gpg Release
 
+          # Firma inline (InRelease)
           gpg --batch --yes --pinentry-mode loopback \
               --passphrase "$GPG_PASSPHRASE" \
               --clearsign -o InRelease Release
 
-          # Exportar clave pública para clientes APT
+          # Exporta la clave pública para clientes APT
           gpg --armor --export "$KEY_FP" > public.gpg
 
           echo "Archivos generados:"
@@ -120,4 +162,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./repo
           publish_branch: gh-pages
-          commit_message: "Actualizar a Fastfetch ${{ env.LAST_VERSION }} (repositorio firmado + Packages)"
+          commit_message: "Actualizar a Fastfetch ${{ env.LAST_VERSION }} (firmado y con changelog)"
