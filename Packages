@@ -4,11 +4,11 @@ Architecture: ppc64el
 Maintainer: Linus Dierheimer <Linus@Dierheimer.de>
 Installed-Size: 18775
 Depends: libc6 (>= 2.31)
-Filename: 2.51.1/fastfetch_2.51.1-repo1_ppc64el.deb
-Size: 3845576
-MD5sum: 0a9a295ed7d493930c39b6f4574ece2a
-SHA1: 436adc6d10da1b5a1dd62a69745ecb924966eb8f
-SHA256: 32e1873fe6a3c24f8bee6d435b7ee17582d207be8a58e95abcf4f69cec507c0d
+Filename: v2.51.1/fastfetch_2.51.1-repo1_ppc64el.deb
+Size: 3805662
+MD5sum: b982247e7cd2fdf9f306ac5c5a1aff83
+SHA1: ed165cc94afca402d074960691dc7f4012271cd7
+SHA256: f50e540ce8ebfdf8545602ebc8572ee0eb2523788d814e08e74b10d733695104
 Section: devel
 Priority: optional
 Description: Fast neofetch-like system information tool
@@ -20,11 +20,11 @@ Architecture: amd64
 Maintainer: Linus Dierheimer <Linus@Dierheimer.de>
 Installed-Size: 14054
 Depends: libc6 (>= 2.35)
-Filename: 2.51.1/fastfetch_2.51.1-repo1_amd64.deb
-Size: 3870508
-MD5sum: d061b6e58579bc1d58da48f1141aa8d9
-SHA1: 7514442feb4f0b1596fbcc67478908f4d301b0a3
-SHA256: 14f873f0d102085119db41b18f1ec6b4a292849426e0c9cd9ef316ef68ef856b
+Filename: v2.51.1/fastfetch_2.51.1-repo1_amd64.deb
+Size: 3830682
+MD5sum: e1483c28f6ccf7e194f8d915c252d338
+SHA1: c605185288d8c9fcde8608a901334c64069d63dc
+SHA256: 5fa4efa0b2e8e08074085029f663f7f37729d6909dacaf5d7afa819e165b949a
 Section: devel
 Priority: optional
 Homepage: https://github.com/fastfetch-cli/fastfetch
@@ -37,11 +37,11 @@ Architecture: riscv64
 Maintainer: Linus Dierheimer <Linus@Dierheimer.de>
 Installed-Size: 15314
 Depends: libc6 (>= 2.35)
-Filename: 2.51.1/fastfetch_2.51.1-repo1_riscv64.deb
-Size: 3602772
-MD5sum: 7038ecede4ee4499cbb25dffdd0cf971
-SHA1: ad0eeaf1789cf4a798137b25125ce52f9770d610
-SHA256: b8d7ef7935f70d5c41853440967701a8a85bb74872830992fa7c501d39780825
+Filename: v2.51.1/fastfetch_2.51.1-repo1_riscv64.deb
+Size: 3562914
+MD5sum: 823715ea2ffab1a86bc9ae7bf53696aa
+SHA1: 26b7807b09c3276acd62c74042c10e17e3bdab12
+SHA256: 26cebce1c7969087a313d023da2c353432eed8c7fcef0c2fc3862dc613a81b97
 Section: devel
 Priority: optional
 Homepage: https://github.com/fastfetch-cli/fastfetch
@@ -54,11 +54,11 @@ Architecture: arm64
 Maintainer: Linus Dierheimer <Linus@Dierheimer.de>
 Installed-Size: 14298
 Depends: libc6 (>= 2.35)
-Filename: 2.51.1/fastfetch_2.51.1-repo1_arm64.deb
-Size: 3764240
-MD5sum: 2384d601f0f4b4f817bf3cec4246068a
-SHA1: ef0b2172efb6625e1be69be4712b958f6f9daeb1
-SHA256: ebfa83ad74d5a45386f36f6c2f94d4eefd9e70cfee9a18ebdb575d1222ed58ff
+Filename: v2.51.1/fastfetch_2.51.1-repo1_arm64.deb
+Size: 3724270
+MD5sum: 843662f062f4a49c293461b64a190880
+SHA1: e9e3990231c08eaaea7629929c32d26b6b63f442
+SHA256: 14bd16cb22f5e420d8d62fc049ef410c5054878a8e74b192a6eefadef3ff2564
 Section: devel
 Priority: optional
 Homepage: https://github.com/fastfetch-cli/fastfetch
@@ -71,11 +71,11 @@ Architecture: s390x
 Maintainer: Linus Dierheimer <Linus@Dierheimer.de>
 Installed-Size: 17845
 Depends: libc6 (>= 2.31)
-Filename: 2.51.1/fastfetch_2.51.1-repo1_s390x.deb
-Size: 3596810
-MD5sum: a6ab596c790f45cebb3b4dec598743dd
-SHA1: b9d794e3358e7c1cbea336ac51c7db8d0643aa77
-SHA256: f6c17ef347e0519baf698da5dbfa606c1e27201490a036943d07d926791d89f9
+Filename: v2.51.1/fastfetch_2.51.1-repo1_s390x.deb
+Size: 3556280
+MD5sum: 43c843eb8d20aff6f6c7adbcb936c00a
+SHA1: 896aad3039c4cb7699bda501ac183b59fba5ebbf
+SHA256: 3a7e2ccb935fedc8501753697277ced228a1d0444d42a60d13f14bb1ec4c8491
 Section: devel
 Priority: optional
 Description: Fast neofetch-like system information tool
@@ -87,11 +87,11 @@ Architecture: armhf
 Maintainer: Linus Dierheimer <Linus@Dierheimer.de>
 Installed-Size: 14391
 Depends: libc6 (>= 2.31)
-Filename: 2.51.1/fastfetch_2.51.1-repo1_armhf.deb
-Size: 3406506
-MD5sum: d53e36ce2ac7608c1e03115c3678d13c
-SHA1: 0a4b0d1d272100fc7e203128b962006df957719a
-SHA256: b3d47d684ecd92e32f8b32121d028c82a9631a0023054023d23e486149d4ae65
+Filename: v2.51.1/fastfetch_2.51.1-repo1_armhf.deb
+Size: 3366434
+MD5sum: dd64e09e4d6e779986d1dd860b45d44a
+SHA1: 763109ff2899f97090ed7a0b3bf66ea5015b892d
+SHA256: 608bbcd40e68e951c854f766d870eeef5d3c27f1c14c07ea64d20e811bf46773
 Section: devel
 Priority: optional
 Homepage: https://github.com/fastfetch-cli/fastfetch
