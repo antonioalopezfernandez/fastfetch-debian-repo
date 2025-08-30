@@ -1,84 +1,92 @@
 name: Actualizar Repositorio de Debian
 
 on:
-  # Permite ejecutar el flujo de trabajo manualmente desde la interfaz de GitHub Actions
   workflow_dispatch:
-  # Programa la ejecución del flujo de trabajo
-  # Esto revisará si hay una nueva release de Fastfetch cada día a las 2 AM UTC
   schedule:
-    - cron: '0 2 * * *'
+    - cron: "0 2 * * *" # Todos los días a las 02:00 UTC
 
 jobs:
   build-and-publish:
-    # Este trabajo se ejecutará en un entorno Ubuntu
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repositorio
-        # Descarga tu repositorio para trabajar con él
         uses: actions/checkout@v3
 
       - name: Instalar herramientas de empaquetado
-        # Instala 'dpkg-dev' para crear los archivos de repositorio Debian
-        run: sudo apt-get update && sudo apt-get install -y dpkg-dev apt-utils
-
-      - name: Instalar 'jq' para parsear JSON
-        # 'jq' es necesario para analizar la respuesta de la API de GitHub
-        run: sudo apt-get install -y jq
-
-      - name: Descargar la última release de Fastfetch
-        id: get_release
         run: |
-          # Obtiene la última release desde la API de GitHub
+          sudo apt-get update
+          sudo apt-get install -y dpkg-dev apt-utils jq curl
+
+      - name: Descargar la última release de Fastfetch (autenticada y robusta)
+        id: get_release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
           API_URL="https://api.github.com/repos/fastfetch-cli/fastfetch/releases/latest"
-          RELEASE_INFO=$(curl -s $API_URL)
-          
-          # Extrae el número de versión (tag_name)
-          LAST_VERSION=$(echo "$RELEASE_INFO" | jq -r .tag_name)
+
+          # Llamada autenticada para evitar rate limits
+          HTTP_CODE=$(curl -sS -H "Authorization: Bearer $GH_TOKEN" \
+                              -H "Accept: application/vnd.github+json" \
+                              -H "User-Agent: gh-actions-fastfetch" \
+                              -w "%{http_code}" -o /tmp/release.json "$API_URL")
+
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "Fallo al pedir la API (HTTP $HTTP_CODE):"
+            cat /tmp/release.json || true
+            exit 1
+          fi
+
+          LAST_VERSION=$(jq -r '.tag_name // empty' /tmp/release.json)
+          if [ -z "${LAST_VERSION:-}" ]; then
+            echo "La respuesta no contiene tag_name:"
+            cat /tmp/release.json
+            exit 1
+          fi
           echo "Se encontró la versión más reciente: $LAST_VERSION"
-          
-          # Guarda la versión para usarla en pasos posteriores
           echo "LAST_VERSION=$LAST_VERSION" >> $GITHUB_ENV
-          
-          # Crea un directorio para los paquetes .deb
+
           mkdir -p debs
-          
-          # Lista de arquitecturas que queremos descargar
-          ARCHS=("amd64" "arm64" "armhf" "i386")
-          
-          for arch in "${ARCHS[@]}"; do
-            DEB_FILE="fastfetch-${LAST_VERSION}-${arch}.deb"
-            DEB_URL="https://github.com/fastfetch-cli/fastfetch/releases/download/${LAST_VERSION}/${DEB_FILE}"
-            
-            echo "Descargando ${DEB_FILE}..."
-            # Descarga el archivo .deb
-            curl -L -o "debs/${DEB_FILE}" "$DEB_URL"
-            
-            # Comprueba si la descarga fue exitosa. Si no, ignora y continúa con la siguiente arquitectura.
-            if [ ! -f "debs/${DEB_FILE}" ]; then
-              echo "ADVERTENCIA: No se pudo descargar el archivo para la arquitectura ${arch}. Ignorando."
+
+          # Obtiene directamente las URLs de los .deb publicados por Fastfetch
+          # (formato: fastfetch-linux-{amd64|aarch64|armv6l|armv7l}.deb)
+          jq -r '.assets[].browser_download_url
+                 | select(test("fastfetch-linux-(amd64|aarch64|armv6l|armv7l)\\.deb$"))' \
+                 /tmp/release.json > /tmp/deb_urls.txt
+
+          if [ ! -s /tmp/deb_urls.txt ]; then
+            echo "No se encontraron .deb en la release $LAST_VERSION"
+            exit 1
+          fi
+
+          while IFS= read -r url; do
+            echo "Descargando $(basename "$url") ..."
+            if ! curl -fL -o "debs/$(basename "$url")" "$url"; then
+              echo "ADVERTENCIA: fallo al descargar $url"
+              rm -f "debs/$(basename "$url")" || true
             fi
-          done
+          done < /tmp/deb_urls.txt
+
+          echo "Contenido de debs/:"
+          ls -l debs || true
 
       - name: Crear el repositorio de Debian
-        # Genera los archivos 'Packages.gz' y 'Release'
         run: |
-          # Genera el archivo 'Packages' para listar los paquetes .deb
+          set -euo pipefail
+          cd debs
+          # Genera Packages.gz a partir de los .deb presentes en esta carpeta
           dpkg-scanpackages -m . /dev/null | gzip -9c > Packages.gz
-          
-          # Crea el archivo de Release para firmar el repositorio (sin firma por ahora)
+          # Genera Release (sin firma)
           apt-ftparchive release . > Release
-          
-          # Mueve los archivos generados a la carpeta debs
-          mv Packages.gz debs/
-          mv Release debs/
+          echo "Archivos generados:"
+          ls -l
 
       - name: Publicar en GitHub Pages
-        # Este action se encarga de subir los archivos generados a la rama gh-pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./debs # La carpeta que contiene los archivos del repositorio Debian
+          publish_dir: ./debs
           publish_branch: gh-pages
-          # Mensaje del commit
           commit_message: "Actualizar a Fastfetch ${{ env.LAST_VERSION }}"
