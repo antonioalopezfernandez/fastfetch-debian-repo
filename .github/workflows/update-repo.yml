@@ -1,4 +1,4 @@
-name: Actualizar Repositorio de Debian (firmado GPG)
+name: Actualizar Repositorio de Debian (firmado GPG y con Packages)
 
 on:
   workflow_dispatch:
@@ -92,23 +92,23 @@ jobs:
           set -euo pipefail
           cd repo
 
-          # Genera Packages.gz
-          dpkg-scanpackages -m . /dev/null | gzip -9c > Packages.gz
+          # Generar índices: BOTH 'Packages' y 'Packages.gz' antes del Release
+          dpkg-scanpackages -m . /dev/null > Packages
+          gzip -9c Packages > Packages.gz
 
-          # Genera Release
+          # Generar Release (leerá los ficheros presentes)
           apt-ftparchive release . > Release
 
-          # Firma separada
+          # Firmas
           gpg --batch --yes --pinentry-mode loopback \
               --passphrase "$GPG_PASSPHRASE" \
               -abs -o Release.gpg Release
 
-          # Firma inline
           gpg --batch --yes --pinentry-mode loopback \
               --passphrase "$GPG_PASSPHRASE" \
               --clearsign -o InRelease Release
 
-          # Exporta clave pública
+          # Exportar clave pública para clientes APT
           gpg --armor --export "$KEY_FP" > public.gpg
 
           echo "Archivos generados:"
@@ -120,4 +120,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./repo
           publish_branch: gh-pages
-          commit_message: "Actualizar a Fastfetch ${{ env.LAST_VERSION }} (repositorio firmado)"
+          commit_message: "Actualizar a Fastfetch ${{ env.LAST_VERSION }} (repositorio firmado + Packages)"
