@@ -5,10 +5,10 @@ Maintainer: Linus Dierheimer <Linus@Dierheimer.de>
 Installed-Size: 17295
 Depends: libc6 (>= 2.31)
 Filename: v2.53.0/fastfetch_2.53.0-repo1_riscv64.deb
-Size: 3308176
-MD5sum: 385fc2d15af0353554551d0a0d961f7c
-SHA1: 2f739b15e1b7c9726ca0ab8caf23cbb3e461d319
-SHA256: 4daed1966edb6b2d96f3be18fa686e8f8b7b140eab3dc62f01bcc33ca0a13c58
+Size: 3308168
+MD5sum: 7a80b362be82c9417416a0ec97f9d8bb
+SHA1: 4fd869f97607226e7ca18d7cc5837b8812466cf6
+SHA256: 8578644d6f30bdde0fd1be600febe26f45c3c38a25693391d0aa085a03c69a64
 Section: devel
 Priority: optional
 Description: Fast neofetch-like system information tool
@@ -21,10 +21,10 @@ Maintainer: Linus Dierheimer <Linus@Dierheimer.de>
 Installed-Size: 14298
 Depends: libc6 (>= 2.31)
 Filename: v2.53.0/fastfetch_2.53.0-repo1_armhf.deb
-Size: 3356508
-MD5sum: c605dcafece10f767d065b1b9546b90c
-SHA1: 30d9dea1dbb9e8fd4733c0f11ed2eef953b2e384
-SHA256: 830320cffbe675baacbf97a5a56c5b82a61f33dd3d3c1a6bd0c01b4543a9cdab
+Size: 3356520
+MD5sum: 5f8fcac851ea873cadf710b9248340d5
+SHA1: dab6eba934a404d40e6a2450d7055e76a2974c00
+SHA256: 983c9714fcf0426975e71b11b79e046b5ef9c07096e9c053475d3de0606e4d2c
 Section: devel
 Priority: optional
 Homepage: https://github.com/fastfetch-cli/fastfetch
@@ -38,10 +38,10 @@ Maintainer: Linus Dierheimer <Linus@Dierheimer.de>
 Installed-Size: 14382
 Depends: libc6 (>= 2.35)
 Filename: v2.53.0/fastfetch_2.53.0-repo1_arm64.deb
-Size: 3767598
-MD5sum: cabe3c7195a9246f9bada760f2a2752d
-SHA1: 8b5aca2c482d538210ad5fba69e187b410886f45
-SHA256: c5badcf48a47a9911c552f75245188845de616cb4ae8b0ff06297004ea360c86
+Size: 3767666
+MD5sum: 9fa775765536b4599e61e37c3a445577
+SHA1: d467d1cf902575afbb906fd052c6654b41302c4b
+SHA256: 14ef44e1dd5e84390158145dcb9a35cf4b5a523cdedae33dcf7b29cd73622de0
 Section: devel
 Priority: optional
 Homepage: https://github.com/fastfetch-cli/fastfetch
@@ -55,10 +55,10 @@ Maintainer: Linus Dierheimer <Linus@Dierheimer.de>
 Installed-Size: 17797
 Depends: libc6 (>= 2.31)
 Filename: v2.53.0/fastfetch_2.53.0-repo1_s390x.deb
-Size: 3535032
-MD5sum: 858de945cb52584e077feb927b029bfe
-SHA1: 1c6fa3da758ad11b21d42c229ef00966faceac7c
-SHA256: e6ed7b8dbda21859d05c181e79b8a9ca8ee556d8d69291e0e0d99ad437c7aaa3
+Size: 3535376
+MD5sum: 2c5903794983cc8cf9e0f4a58fd3a860
+SHA1: b7d708ee05db3cfedc639b9668f4e0a2c0392042
+SHA256: 329df66628ee17707c695a84630d5afe3ca6370a6324dfb46186f455ec676ce9
 Section: devel
 Priority: optional
 Description: Fast neofetch-like system information tool
@@ -71,10 +71,10 @@ Maintainer: Linus Dierheimer <Linus@Dierheimer.de>
 Installed-Size: 14134
 Depends: libc6 (>= 2.35)
 Filename: v2.53.0/fastfetch_2.53.0-repo1_amd64.deb
-Size: 3859656
-MD5sum: 1f5e2495314a23674597f4567ce4c7ae
-SHA1: 4dba96ee1c576b146b23d5ad355145eaf2e100c6
-SHA256: aeed668874d08bcf2765c1e40e04833ffd534a17c0483f3f3c5fb6be80b51d38
+Size: 3851178
+MD5sum: 77e953503fd3a83374bd9fe7e56b51bc
+SHA1: c791c919bd557ad3ce55bd263d3d23732caa505c
+SHA256: d9ed5ef2d03594c57e56268eb2359a26424f8a05817e04e122f8950080ed52ef
 Section: devel
 Priority: optional
 Homepage: https://github.com/fastfetch-cli/fastfetch
@@ -88,10 +88,10 @@ Maintainer: Linus Dierheimer <Linus@Dierheimer.de>
 Installed-Size: 18724
 Depends: libc6 (>= 2.31)
 Filename: v2.53.0/fastfetch_2.53.0-repo1_ppc64el.deb
-Size: 3778760
-MD5sum: 676e76a1f356e82a7b50c56188a74633
-SHA1: 1f68d911a41de59b18aa4e4d7bb0e5e06c59799e
-SHA256: 7c514f03f8fd4f9c17b716ac8f1201bb81f914d680b7116a4765312c785c9f7e
+Size: 3778828
+MD5sum: 6addb2cb77d9b68ba201af05f686724c
+SHA1: 8090d4b5e306d1bdf7e2268fa30daeec12be0449
+SHA256: 0681ba236457f7dfe549cd35e341deeba5c092b248639c1897b8cc6f5c434883
 Section: devel
 Priority: optional
 Description: Fast neofetch-like system information tool
