@@ -8,26 +8,33 @@ on:
   schedule:
     - cron: "0 2 * * *"
 
+# Evita ejecuciones concurrentes del mismo workflow
 concurrency:
   group: apt-repo-fastfetch
   cancel-in-progress: false
 
 jobs:
   build-and-publish:
-    # El job se ejecuta en una máquina virtual con Ubuntu
+    # Se ejecuta en Ubuntu
     runs-on: ubuntu-latest
 
-    # Solo necesita permiso para publicar en gh-pages
+    # Permiso mínimo necesario para publicar en gh-pages
     permissions:
       contents: write
 
+    env:
+      # Opcional: filtra arquitecturas (por nombre del .deb). Deja vacío para todas.
+      # Ejemplo: "amd64|arm64"
+      APT_ARCH_FILTER: ""
+
     steps:
-      # 1. Descarga el código fuente de este repo (necesario para publicar en gh-pages)
+      # 1. Descarga el código fuente del repo
       - name: Checkout repositorio
         uses: actions/checkout@v4
 
-      # 2. Instala las herramientas necesarias para empaquetar y firmar
+      # 2. Instala herramientas necesarias para empaquetar y firmar
       - name: Instalar herramientas necesarias
+        shell: bash
         run: |
           set -euo pipefail
           sudo apt-get update
@@ -38,11 +45,12 @@ jobs:
           # fakeroot → reempaquetar .deb
           # jq/curl → parsear JSON y descargar
 
-      # 3. Obtiene la última release de Fastfetch desde la API de GitHub y descarga los .deb
+      # 3. Descarga la última release de Fastfetch desde GitHub y sus .deb
       - name: Descargar la última release de Fastfetch (API GitHub)
         id: get_release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
         run: |
           set -euo pipefail
           API_URL="https://api.github.com/repos/fastfetch-cli/fastfetch/releases/latest"
@@ -55,27 +63,46 @@ jobs:
 
           # Extrae el tag (ej: v2.51.1)
           LAST_VERSION=$(jq -r '.tag_name' /tmp/release.json)
-          echo "LAST_VERSION=$LAST_VERSION" >> $GITHUB_ENV
+          if [[ -z "${LAST_VERSION}" || "${LAST_VERSION}" == "null" ]]; then
+            echo "No se pudo obtener el tag de la última release"; exit 1
+          fi
+          echo "Última versión: $LAST_VERSION"
+          echo "LAST_VERSION=$LAST_VERSION" >> "$GITHUB_ENV"
 
-          # Crea carpeta para los .deb
+          # Limpia residuos previos y prepara carpeta
           mkdir -p "repo/v${LAST_VERSION}"
+          rm -f repo/*.deb || true
 
-          # Extrae todas las URLs de assets que terminen en .deb
-          jq -r '.assets[].browser_download_url | select(endswith(".deb"))' /tmp/release.json > /tmp/deb_urls.txt
+          # Extrae URLs de assets .deb (filtrando por arquitectura si se define)
+          if [[ -n "$APT_ARCH_FILTER" ]]; then
+            jq -r --arg re "$APT_ARCH_FILTER" \
+              '.assets[] | select(.browser_download_url | endswith(".deb")) | select(.name | test($re)) | .browser_download_url' \
+              /tmp/release.json > /tmp/deb_urls.txt
+          else
+            jq -r '.assets[].browser_download_url | select(endswith(".deb"))' \
+              /tmp/release.json > /tmp/deb_urls.txt
+          fi
+
+          # Si no hay .deb, falla
+          if [[ ! -s /tmp/deb_urls.txt ]]; then
+            echo "No hay assets .deb en la release $LAST_VERSION (filtro: '${APT_ARCH_FILTER}')" ; exit 1
+          fi
 
           # Descarga cada .deb
           while IFS= read -r url; do
+            echo "Descargando $(basename "$url")"
             curl -fL -o "repo/$(basename "$url")" "$url"
           done < /tmp/deb_urls.txt
 
       # 4. Inyecta el changelog dentro de cada .deb (para apt-listchanges)
       - name: Inyectar changelog en los .deb (desde CHANGELOG.md)
+        shell: bash
         run: |
           set -euo pipefail
-          # Intenta bajar el CHANGELOG.md del tag correspondiente
-          # Si no existe, usa la rama master (no main)
+          # Intenta bajar el CHANGELOG.md del tag correspondiente; si no, master; si no, main
           curl -fsSL "https://raw.githubusercontent.com/fastfetch-cli/fastfetch/${LAST_VERSION}/CHANGELOG.md" -o /tmp/CHANGELOG.md \
-            || curl -fsSL "https://raw.githubusercontent.com/fastfetch-cli/fastfetch/master/CHANGELOG.md" -o /tmp/CHANGELOG.md
+            || curl -fsSL "https://raw.githubusercontent.com/fastfetch-cli/fastfetch/master/CHANGELOG.md" -o /tmp/CHANGELOG.md \
+            || curl -fsSL "https://raw.githubusercontent.com/fastfetch-cli/fastfetch/main/CHANGELOG.md" -o /tmp/CHANGELOG.md
 
           # Extrae solo la sección de la versión actual
           ver="${LAST_VERSION#v}"
@@ -90,17 +117,16 @@ jobs:
             { if (printit) print }
           ' /tmp/CHANGELOG.md > /tmp/CHANGELOG_SECTION.md || true
 
-          # Si no se encontró la sección, usa todo el changelog para no quedar vacío
+          # Si no se encontró la sección específica, usa todo el changelog
           if [[ ! -s /tmp/CHANGELOG_SECTION.md ]]; then
             echo "Aviso: no se encontró sección específica de $ver; se usará todo el CHANGELOG."
             cp /tmp/CHANGELOG.md /tmp/CHANGELOG_SECTION.md
           fi
 
-          mkdir -p "repo/v${LAST_VERSION}"
+          # Inyecta changelog en cada .deb
           shopt -s nullglob
           for deb in repo/*.deb; do
             workdir="$(mktemp -d)"
-            # Desempaqueta el .deb
             fakeroot dpkg-deb -R "$deb" "$workdir"
             PKG_NAME=$(awk -F': *' '$1=="Package"{print $2; exit}' "$workdir/DEBIAN/control")
 
@@ -117,12 +143,13 @@ jobs:
                 | LC_ALL=C sort \
                 | xargs -r md5sum > DEBIAN/md5sums )
 
-            # Reempaqueta con nombre inmutable (evita colisiones)
+            # Reempaqueta con nombre inmutable (-repo1)
             NEW_DEB="${deb}.new"
             fakeroot dpkg-deb -b "$workdir" "$NEW_DEB"
             DEB_VER=$(dpkg-deb -f "$NEW_DEB" Version)
             DEB_ARCH=$(dpkg-deb -f "$NEW_DEB" Architecture)
             FINAL_NAME="${PKG_NAME}_${DEB_VER}-repo1_${DEB_ARCH}.deb"
+            mkdir -p "repo/v${LAST_VERSION}"
             mv "$NEW_DEB" "repo/v${LAST_VERSION}/$FINAL_NAME"
 
             rm -f "$deb"
@@ -130,29 +157,54 @@ jobs:
           done
           shopt -u nullglob
 
-      # 5. Importa la clave GPG para firmar el Release
+      # 5. Importa la clave GPG privada para firmar el Release
       - name: Importar clave GPG
         env:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+        shell: bash
         run: |
           set -euo pipefail
+          if [[ -z "${GPG_PRIVATE_KEY:-}" ]]; then
+            echo "Falta el secreto GPG_PRIVATE_KEY"; exit 1
+          fi
           mkdir -p ~/.gnupg
           chmod 700 ~/.gnupg
           echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
           echo "$GPG_PRIVATE_KEY" | gpg --batch --import
           KEY_FP=$(gpg --list-secret-keys --with-colons | awk -F: '/^sec:/ {print $5; exit}')
-          echo "KEY_FP=$KEY_FP" >> $GITHUB_ENV
+          if [[ -z "${KEY_FP}" ]]; then
+            echo "No se pudo importar/encontrar la clave GPG"; exit 1
+          fi
+          echo "KEY_FP=$KEY_FP" >> "$GITHUB_ENV"
 
-      # 6. Genera índices del repo y los firma
+      # 6. Genera índices del repo y los firma con GPG
       - name: Crear índices y firmar
         env:
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        shell: bash
         run: |
           set -euo pipefail
+          if [[ -z "${GPG_PASSPHRASE:-}" ]]; then
+            echo "Falta el secreto GPG_PASSPHRASE"; exit 1
+          fi
+
           cd repo
+
+          # Genera Packages y Packages.gz
           dpkg-scanpackages -m "v${LAST_VERSION}" /dev/null > Packages
           gzip -9f -c Packages > Packages.gz
-          apt-ftparchive release . > Release
+
+          # Genera apt.conf con metadatos descriptivos
+          printf '%s\n' \
+            'APT::FTPArchive::Release {' \
+            '  Origin "fastfetch (community mirror)";' \
+            '  Label "fastfetch";' \
+            '  Suite "stable";' \
+            '  Codename "fastfetch";' \
+            '};' > apt.conf
+
+          # Genera el archivo Release
+          apt-ftparchive -c=apt.conf release . > Release
 
           # Firma Release → Release.gpg e InRelease
           gpg --batch --yes --pinentry-mode loopback \
@@ -162,20 +214,21 @@ jobs:
               --passphrase "$GPG_PASSPHRASE" \
               --clearsign -o InRelease Release
 
-          # Exporta la clave pública
+          # Exporta la clave pública (ASCII armor)
           gpg --armor --export "$KEY_FP" > public.gpg
 
-          # Evita que GitHub Pages modifique nada
-          echo > .nojekyll
+          # Evita que GitHub Pages toque nada
+          : > .nojekyll
 
       # 7. Verificación: todos los Filename en Packages existen
       - name: Sanity check - Packages vs ficheros
+        shell: bash
         run: |
           set -euo pipefail
           cd repo
           awk '/^Filename: /{print $2}' Packages > /tmp/files.txt
           while IFS= read -r f; do
-            if [ ! -f "$f" ]; then
+            if [[ ! -f "$f" ]]; then
               echo "ERROR: falta $f"
               exit 1
             fi
