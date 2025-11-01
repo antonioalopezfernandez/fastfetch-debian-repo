@@ -90,15 +90,5 @@ apt update
 
 ---
 
-### Ejemplo rápido
-
-```bash
-apt install -y curl gpg
-curl -fsSL https://antonioalopezfernandez.github.io/fastfetch-debian-repo/setup.sh | bash
-fastfetch
-```
-
----
-
 🧩 **Mantenido por:** [Antonio López Fernández](https://github.com/antonioalopezfernandez)  
 🔑 **Clave pública:** [public.gpg](https://antonioalopezfernandez.github.io/fastfetch-debian-repo/public.gpg)
