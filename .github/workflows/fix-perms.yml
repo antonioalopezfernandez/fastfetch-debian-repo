@@ -1,0 +1,42 @@
+name: Marcar scripts como ejecutables
+
+on:
+  workflow_dispatch:  # solo se lanza a mano
+
+jobs:
+  fix-permissions:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write  # necesario para hacer commit/push
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Marcar scripts como ejecutables y commitear
+        run: |
+          set -euo pipefail
+
+          # Configura usuario de commit (el bot de GitHub)
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Marca como ejecutables los scripts que quieras
+          git update-index --chmod=+x scripts/download-fastfetch-debs.sh
+          git update-index --chmod=+x scripts/inject-changelog.sh
+          git update-index --chmod=+x scripts/build-apt-repo.sh
+          git update-index --chmod=+x scripts/sanity-check.sh
+
+          # ¿Hay cambios?
+          if git diff --quiet; then
+            echo "No hay cambios de permisos que commitear."
+            exit 0
+          fi
+
+          git commit -m "Marcar scripts de GitHub Actions como ejecutables"
+
+          # Empuja a la misma rama sobre la que se ha lanzado el workflow
+          git push origin "${GITHUB_REF_NAME}"
