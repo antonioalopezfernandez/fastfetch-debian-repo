@@ -32,8 +32,6 @@ jobs:
       # Ejemplo: "amd64|arm64"
       APT_ARCH_FILTER: ${{ inputs.arch_filter || '' }}
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      # Homedir GPG aislado en tmp del runner
-      GNUPGHOME: ${{ runner.temp }}/gnupg
 
     defaults:
       run:
@@ -67,6 +65,9 @@ jobs:
           echo "Falta el secreto GPG_PRIVATE_KEY"; exit 1
         fi
 
+        # Usamos el directorio temporal del runner
+        export GNUPGHOME="${RUNNER_TEMP}/gnupg"
+
         mkdir -p "$GNUPGHOME"
         chmod 700 "$GNUPGHOME"
         echo "pinentry-mode loopback" >> "$GNUPGHOME/gpg.conf"
@@ -80,10 +81,15 @@ jobs:
 
         echo "KEY_FP=$KEY_FP" >> "$GITHUB_ENV"
 
+
     - name: Crear índices del repo y firmar
       env:
         GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-      run: ./scripts/build-apt-repo.sh
+      run: |
+        set -euo pipefail
+        export GNUPGHOME="${RUNNER_TEMP}/gnupg"
+        ./scripts/build-apt-repo.sh
+
 
     - name: Sanity check - Packages vs ficheros
       run: ./scripts/sanity-check.sh
