@@ -15,12 +15,13 @@ Ejecuta estos comandos con un usuario con `sudo` (o como root).
 
 ```bash
 # 1. Descargar e instalar la clave GPG del repositorio
-curl -fsSL https://antonioalopezfernandez.github.io/fastfetch-debian-repo/public.gpg   | sudo gpg --dearmor -o /usr/share/keyrings/fastfetch.gpg
+curl -fsSL https://antonioalopezfernandez.github.io/fastfetch-debian-repo/public.gpg | sudo gpg --dearmor -o /usr/share/keyrings/fastfetch.gpg
 
 # 2. Registrar el repositorio APT
-echo 'deb [signed-by=/usr/share/keyrings/fastfetch.gpg] https://antonioalopezfernandez.github.io/fastfetch-debian-repo fastfetch main'   | sudo tee /etc/apt/sources.list.d/fastfetch-debian-repo.list > /dev/null
+echo 'deb [signed-by=/usr/share/keyrings/fastfetch.gpg] https://antonioalopezfernandez.github.io/fastfetch-debian-repo ./' | sudo tee /etc/apt/sources.list.d/fastfetch-debian-repo.list > /dev/null
 
 # 3. Actualizar índices e instalar Fastfetch
+sudo apt modernize-sources
 sudo apt update
 sudo apt install fastfetch
 ```
@@ -28,7 +29,7 @@ sudo apt install fastfetch
 Si todo está bien, durante el `apt update` deberías ver algo similar a:
 
 ```text
-Get:1 https://antonioalopezfernandez.github.io/fastfetch-debian-repo fastfetch InRelease [X kB]
+Get:1 https://antonioalopezfernandez.github.io/fastfetch-debian-repo ./ fastfetch InRelease [X kB]
 ...
 Reading package lists... Done
 ```
