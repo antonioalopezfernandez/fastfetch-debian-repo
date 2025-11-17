@@ -1,0 +1,97 @@
+name: Actualizar Repositorio de Debian (inmutable + firmado + changelog)
+
+on:
+  # Lanzar manualmente desde Actions
+  workflow_dispatch:
+    inputs:
+      arch_filter:
+        description: "Regex de arquitecturas (ej: amd64|arm64)"
+        required: false
+        default: ""
+  # Cron diario a las 02:00 UTC
+  schedule:
+  - cron: "0 2 * * *"
+
+# Evita concurrencias entre ramas y cancela ejecuciones antiguas
+concurrency:
+  group: apt-repo-fastfetch-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-publish:
+    # Solo publica desde main (evita ramas/forks)
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    # Permiso mínimo necesario para publicar en gh-pages
+    permissions:
+      contents: write
+
+    env:
+      # Opcional: filtra arquitecturas (por nombre del .deb). Deja vacío para todas.
+      # Ejemplo: "amd64|arm64"
+      APT_ARCH_FILTER: ${{ inputs.arch_filter || '' }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Homedir GPG aislado en tmp del runner
+      GNUPGHOME: ${{ runner.temp }}/gnupg
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+    - name: Checkout repositorio
+      uses: actions/checkout@v4
+      # TODO: Opcional: fijar por SHA para supply-chain
+
+    - name: Instalar herramientas necesarias
+      run: |
+        set -euo pipefail
+        sudo apt-get update
+        sudo apt-get install -y \
+          dpkg-dev apt-utils gnupg fakeroot xz-utils jq curl
+
+    - name: Descargar la última release de Fastfetch
+      run: ./scripts/download-fastfetch-debs.sh
+
+    - name: Inyectar changelog en los .deb
+      run: ./scripts/inject-changelog.sh
+
+    - name: Importar clave GPG
+      env:
+        GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+      run: |
+        set -euo pipefail
+
+        if [[ -z "${GPG_PRIVATE_KEY:-}" ]]; then
+          echo "Falta el secreto GPG_PRIVATE_KEY"; exit 1
+        fi
+
+        mkdir -p "$GNUPGHOME"
+        chmod 700 "$GNUPGHOME"
+        echo "pinentry-mode loopback" >> "$GNUPGHOME/gpg.conf"
+
+        echo "$GPG_PRIVATE_KEY" | gpg --batch --import
+
+        KEY_FP=$(gpg --list-secret-keys --with-colons | awk -F: '/^sec:/ {print $5; exit}')
+        if [[ -z "${KEY_FP}" ]]; then
+          echo "No se pudo importar/encontrar la clave GPG"; exit 1
+        fi
+
+        echo "KEY_FP=$KEY_FP" >> "$GITHUB_ENV"
+
+    - name: Crear índices del repo y firmar
+      env:
+        GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+      run: ./scripts/build-apt-repo.sh
+
+    - name: Sanity check - Packages vs ficheros
+      run: ./scripts/sanity-check.sh
+
+    - name: Publicar en GitHub Pages
+      uses: peaceiris/actions-gh-pages@v4
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./repo
+        publish_branch: gh-pages
+        commit_message: "Actualizar a Fastfetch ${{ env.LAST_VERSION }} (inmutable, firmado, changelog)"
