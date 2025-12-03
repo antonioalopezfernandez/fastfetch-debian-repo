@@ -1,21 +1,21 @@
 Codename: fastfetch
-Date: Tue, 02 Dec 2025 03:23:54 +0000
+Date: Wed, 03 Dec 2025 03:22:55 +0000
 Label: fastfetch
 Origin: fastfetch (community mirror)
 Suite: stable
 MD5Sum:
- 17549976bdd8df6be26aabd8282a2dc6             4787 Packages
- 4bdf5b8d25453d018793a476bffa8978             1195 Packages.gz
- 3fe9ceb42997551f8a2ce5ea44ec3d00              126 Release
+ 93c977084acff000e7878c4d345dde33             4787 Packages
+ 382b5969964394279ecb896b1f98c571             1191 Packages.gz
+ 2f1e3ec8b0f958a5fe6e0f4b4299dbc9              126 Release
 SHA1:
- e671949c61901d513cd23beb6796147f2a1828dd             4787 Packages
- d03c10d68cb6d1ea97f2ef49d47dc3a1e9922db3             1195 Packages.gz
- b2b7df75e73def1af668824839f338abba4c8d46              126 Release
+ 5023000e37448147b72b22369d941ce0533a6787             4787 Packages
+ d91d60960bbea8f4998b9c9b522e2915cf43629f             1191 Packages.gz
+ 7023e7012dd0a881a6cac1e520f34ce09bb3fcec              126 Release
 SHA256:
- 7cc83bcc3d6331f1918d8d953069f07a5efc50ca41706619f56cadadcc97678b             4787 Packages
- f585b145f431684a1e5635540aa9acc0d64bf0faa1eb4712bbbc241ad549b40d             1195 Packages.gz
- 1fc3fc77645ee79678c66e62b5022d04a8cd4354364f13579e1aed34a25f7d1c              126 Release
+ 892a2d9788f57f51df26cfdbae2ebcad323d14d2048eb006095313fa7d509516             4787 Packages
+ 77d3a535480d74d442dbfebe65e5f0dde789b87648aa64972b3b5bc67ddf1cc6             1191 Packages.gz
+ 9ed27e30dd8dfc934ffb623f2e4b2c9a8ef0bf95e845d05a203c0a582ec8bf25              126 Release
 SHA512:
- ae702aea0a34a514d03f3c841c361f42295e2f7a2799f36e0935b7fc6eac3c830f6f5ae1d4a2dfb002b002fb042f02070c24beea2e92be0d0c09a739a814789d             4787 Packages
- 5aba0a078574eeb57a0918e12575b5ec5431992f813d937d3ea7de42540e3af712232d02a853f53c1382485f9eeae5284baea9c8e12f6c5cb00b380d3e9707ee             1195 Packages.gz
- 1dc265d6949176809f76617337602298e14f95ed6093c7575cbaa67813c423f241e43b3857b23b7d21a46a2e292c619507e30ac9794c73c2ee3adbcc69fda2c5              126 Release
+ 5ca9f54c0955dc3bc4e25a96261adfdbbd7c2c196870f25e49a886111cd42afc0768a177b0e7931fa0e75c456c507ce306f782b3bebdc2ffdb47f7243963bd32             4787 Packages
+ a98005b83b78e5bf0175f91287d06f91231e2ed17d486d0160b05eff05b594223fab6de43baacb65423caade4071696d186fbb5477bbb90bd28b70116719180e             1191 Packages.gz
+ f3182309bf2ba9ab4763d39ba53737fabc0453083f86315e7b276002dbe269a6a4e88d1aa4b5a7fef96a706e5c864a65e83a0090f3fbba8af7f4a664b8c15a97              126 Release
