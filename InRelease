@@ -2,37 +2,37 @@
 Hash: SHA512
 
 Codename: fastfetch
-Date: Fri, 17 Apr 2026 04:54:39 +0000
+Date: Sat, 18 Apr 2026 04:38:06 +0000
 Label: fastfetch
 Origin: fastfetch (community mirror)
 Suite: stable
 MD5Sum:
- 82d378b2639e8280fda006cd86ed2088             4787 Packages
- adb69eff28220e8f7740518958c80bed             1184 Packages.gz
- 0ddc6179d3597571f0591669e1092a9d              126 Release
+ d0d704db70fa104f665bbce8e0315f28             4787 Packages
+ 857e32ab335103ca5824b57b83b2053c             1183 Packages.gz
+ b80c92a7cee1ffc5aa028a91006b3b82              126 Release
 SHA1:
- 20db2e1a5c18ec06048f7a81d5fa52673f90b2d6             4787 Packages
- ee72afe96579bd58dcf675faa6441ca38138dc35             1184 Packages.gz
- abf3e5de460c0aaa551d79ab3068c28e49b7386f              126 Release
+ 8cb98d598c2394ff8db32d9ffa8ef43a269ec0c3             4787 Packages
+ 9b363a03d85c846f19222b581b0ece767b2e416c             1183 Packages.gz
+ 92d948d29656a99e2cfa00ce04cf56264229cbba              126 Release
 SHA256:
- 306a481d51902ceac76ffbc66c5e55f2712ba62b471d274b9ad402bf4ceee228             4787 Packages
- 91c199eabcdda6c25df91780875e5dd7582d39f234503f64a64f8cd81f1e60e4             1184 Packages.gz
- ebd1e9d154e9d63f7beeddb1ef9641ea7626e5863eab1ba076c91ed20af9c0b6              126 Release
+ 38a518b61893e6762e4b5e328e991549b100557de3aa8556ef4d249afb555509             4787 Packages
+ f9bbdeabc4684208318bd8fe04f0a6152be8ef7a8c69ee6095f9ce8aaa8bb3ec             1183 Packages.gz
+ 83de1b4e9c43180d0e7c091d0aa5cbb041afdd1d92c61099e51213bbf986de5a              126 Release
 SHA512:
- 241f9590e37963e1009c25dabacb73c8d247e402fce7dab5ffd9c2366067a703f894092c27fb6c4771ed6bb1b0e04abb7b0c5ab0080b0c371423e4d5fbe7ddf1             4787 Packages
- 688b2217de7235c4ee57cfcdb7c514895e12fc758b77b3923c2117559432b6bac13030490003d1b0983c84ead5824dab4b591e04409a833c39487f20148f467c             1184 Packages.gz
- 6ce3ee89213eded341b5500f850dd54dcf839d9282e0e0a4d3bfb07728872b9b485fd1eed4759b0c1c63f941c549685ff9aa13b6c9c3896ad5e5e9447cdccfe7              126 Release
+ b95d1f0ae16f72de364473429f511d7f13640a216626eabdea01893c9ea0673197f06e09034453a7c4f2f4df765c9af87c923f3a8a0d5d99bdf304c0c9252727             4787 Packages
+ 4f161e608bb5a116900b8e1a9d30da4e945438786d03fc7a6237da8ace8b022e528310c4d74c3223eccce764db9d14803805330650e34b1454a8fd61365145b5             1183 Packages.gz
+ 69439ba3a2a7e5f6578883202b3b1199228e797349350f7f9431776fef99e766674b84e52e946e3821d16cef4df3a1ae3306dfe13f8ddf2ee103336844513cdb              126 Release
 -----BEGIN PGP SIGNATURE-----
 
-iQGzBAEBCgAdFiEE7VXWIDGiGNL/C3V+P7VGVxvHAQQFAmnhvRAACgkQP7VGVxvH
-AQRt3Av+Pqr8UwPTwEjGf/5KKfpRctVewuW3UmlSUDIIUkzSnX1Ci8AlnWSzoNuf
-nedUqe5xRwQk0QHTclz8RW5nWqhtN0MjP18TZuvx8Bgfzao7IZKDGEFoOJ0x4z6e
-O4q5VEAa3ZxQ4gl808XYQiwjinW70Ex67KglqRUwFq/uXfWxgtObAPRe8Xilh7Sp
-nAXHORPoBpQc+ojkLKEMy+S5gtZmAqyqHbVz0QYUgaF7y56Q17BLddgGTWdk2bsI
-WnEjjDWzP9ie6999jXLStE56LEcGQEz3C65edvKkAga7Q/U5JDZ+c1yO116Evg31
-WgvIHIQbMIZNs5SP4ZB4pkSRpTwO6bqx+Hv5IQy7kPBHfc+7rtmBorvFvsscFzG/
-BRdiWcnBVg9yGoy8ecLrsWmVZwuiw4/QXKPNC/tQ9eWzhuZL7bYgMQvlyOrQKSob
-KCUgkhAU4gAqzRSKJX4Vib5JU/CzNMqd5Py5peE6yfIr8IUkSu73UmPj7l0ZXGv/
-CMVsL3ov
-=Dy3U
+iQGzBAEBCgAdFiEE7VXWIDGiGNL/C3V+P7VGVxvHAQQFAmnjCq8ACgkQP7VGVxvH
+AQRZDQv+MjnmJpd59JpkwPTlzP0SE0Pk9pTYi1iIi/OgRL1sebgtTMcTL7T4Bc57
+nliNTC/edaDt1kXF5Bz1Ee5+7ema3e5ed3D6Oc4Ul2N5Mb7HE6JJ9Z9xPTk2Ic31
+2glLJl9y4eUiRB4WLT0vBg1pkzQoqYr47af1c8I3Omtsfm42tbjZijytn3w8N6sO
+fUzEsmUIINnm1c78d98nzSC2Jae2abKbDgN5Ar0ja7ZW+jD4rwSZuu59tyKTufqm
+xdnrHVU7v9bdBz03Ytit03+gc3Mw29qEzEGPgWPloaoe8vifMRKz9CKSwsK/pBeY
+Oy+bGi95M8Dz+2OzHpqd2FrFTfxVffAKUpXOoWOcZVpq0+GYZUQCDqJ+mQtFBm/L
+ztH0RfXNYv4tWbNBuOfoDeLGdsVuQZfEDQsZlbuHcOOTBJhMmU7BbYANryJmJdlY
+jHETao13jzM6j4prEi/If78MkKWOD55AefZZ1HhSTrPQSE3z7HcB6LaNOzn3Tbmq
+uTooGmUD
+=VHHn
 -----END PGP SIGNATURE-----
