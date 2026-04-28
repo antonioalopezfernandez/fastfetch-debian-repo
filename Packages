@@ -5,10 +5,10 @@ Maintainer: Carter Li <zhangsongcui@live.cn>
 Installed-Size: 14794
 Depends: libc6 (>= 2.35)
 Filename: v2.62.1/fastfetch_2.62.1-repo1_amd64.deb
-Size: 4080760
-MD5sum: e88ee8a1699c1618029f202ffcf8e873
-SHA1: c60489d06de8f0a9d75781527e822ce7afae3e0e
-SHA256: 7754b451bb8f89b7c393ea4d7b8b4b98cfb58a05d9a8587df0a896fb9a1b56ea
+Size: 4080682
+MD5sum: 09aaf509efcb40c48b54df0f975926f8
+SHA1: 928df55228f3d429ded4b7ce3fd4b8d54f6655ed
+SHA256: 229d9f7909c153e692fcd2194fa9e537aa20c76f0b1ad80db1e1c422c64d0abe
 Section: devel
 Priority: optional
 Homepage: https://github.com/fastfetch-cli/fastfetch
@@ -22,10 +22,10 @@ Maintainer: Carter Li <zhangsongcui@live.cn>
 Installed-Size: 14502
 Depends: libc6 (>= 2.35)
 Filename: v2.62.1/fastfetch_2.62.1-repo1_i386.deb
-Size: 4236854
-MD5sum: 4cd38463ae5a99dd533ae5dbc3d99575
-SHA1: 5650c3bf1975d5e566566e09c134da539e17308e
-SHA256: 32ba193f0c32de64068a5b17744cfb9b9a893c953e4cdf396bbd8cd612ac7260
+Size: 4235588
+MD5sum: 018f5470d5e37b89b227d765089cc6c2
+SHA1: 17f9cd0e9cd859ed969b83ec8cc3f147c31ead42
+SHA256: 70eff823963403a2e1a4da17ff6a29c107a253475b1b846a34d6ec3528262363
 Section: devel
 Priority: optional
 Homepage: https://github.com/fastfetch-cli/fastfetch
@@ -39,10 +39,10 @@ Maintainer: Carter Li <zhangsongcui@live.cn>
 Installed-Size: 14749
 Depends: libc6 (>= 2.35)
 Filename: v2.62.1/fastfetch_2.62.1-repo1_ppc64el.deb
-Size: 3962900
-MD5sum: 60e675caeb4a8ce60645895b32cdcf4c
-SHA1: 30d4acd5e5e21bf96fffad3b2fc7c77fbb9874a0
-SHA256: e64c66fcaf1f7165ee2c0841a60ff32c7b86ed40574fb766202d269c70cb6e8c
+Size: 3962906
+MD5sum: 81206256865609a5b8e44df5d5b90a4a
+SHA1: af039a10ffba3b7f95fbfa2da4417e85e020b16e
+SHA256: b6e844ddd8e409c60a6f9d731aa91678e0984d5342cdc00c769446e09513deb5
 Section: devel
 Priority: optional
 Homepage: https://github.com/fastfetch-cli/fastfetch
@@ -56,10 +56,10 @@ Maintainer: Carter Li <zhangsongcui@live.cn>
 Installed-Size: 12848
 Depends: libc6 (>= 2.35)
 Filename: v2.62.1/fastfetch_2.62.1-repo1_armhf.deb
-Size: 3830798
-MD5sum: 6ef58915dbc8cd4196cebc9d01de466e
-SHA1: e5ba8e3aa8a5b98f6315d44a2eb2eb20575693ec
-SHA256: 7154d324fe7eb86888b97c62afce3403bbd5e15381c39cdc15916bf1940b6aed
+Size: 3830594
+MD5sum: 12d2e302d202af188c97cb230c02e783
+SHA1: 2326c7f2125cac03c85516cda4d429cf8b9a2299
+SHA256: b6926bbcf5744a9c1851dff3de1463779608c0fe992a5e8c05eb0af07f0c5a1d
 Section: devel
 Priority: optional
 Homepage: https://github.com/fastfetch-cli/fastfetch
@@ -73,10 +73,10 @@ Maintainer: Carter Li <zhangsongcui@live.cn>
 Installed-Size: 16507
 Depends: libc6 (>= 2.35)
 Filename: v2.62.1/fastfetch_2.62.1-repo1_riscv64.deb
-Size: 3858814
-MD5sum: 671b42fa422d3e3f7f577f760f9330e5
-SHA1: 649d19317447ef1a89ef5205eaf42bd10573f081
-SHA256: e2773232792ca6e4fc9530063751d435ece9926083c9b596e94ef6cd5f3b35de
+Size: 3858796
+MD5sum: 5c67cf94df92ac1b9ee1e9fed668a977
+SHA1: 9620fb88531050a422485bc32096275bf41153d6
+SHA256: 4f3c3fb8ed271beb4742301e26f772d5a462058ca02402072bcca6337096d57a
 Section: devel
 Priority: optional
 Homepage: https://github.com/fastfetch-cli/fastfetch
@@ -90,10 +90,10 @@ Maintainer: Carter Li <zhangsongcui@live.cn>
 Installed-Size: 14173
 Depends: libc6 (>= 2.35)
 Filename: v2.62.1/fastfetch_2.62.1-repo1_s390x.deb
-Size: 3902436
-MD5sum: 592d7171c96d65d9682ebc6715c910cc
-SHA1: d2caec70396b1df968b917498c435eaf21797459
-SHA256: 12610bae3e53aed6b2077ebf67eb261241b220d8c39584e28ccd0c692e6f39d1
+Size: 3902434
+MD5sum: 758fe83c62ed6ec95e72cbbd19268da4
+SHA1: ba9f886e3ce2b2d923daaae513554d8b3f678bf0
+SHA256: 4647de92ceb809cb9296d4218eec4d4959e927556c73b7750e78e9eaedf70969
 Section: devel
 Priority: optional
 Homepage: https://github.com/fastfetch-cli/fastfetch
@@ -107,10 +107,10 @@ Maintainer: Carter Li <zhangsongcui@live.cn>
 Installed-Size: 15189
 Depends: libc6 (>= 2.35)
 Filename: v2.62.1/fastfetch_2.62.1-repo1_arm64.deb
-Size: 3988082
-MD5sum: c6979230d5dff8d517f02c06c660119c
-SHA1: 1148e6400b82690dd803786c4003bd16580d5738
-SHA256: 40a9a78e39df2baa7b4625899326e75018c87d29e95ef83f73111a3d48ca976b
+Size: 3988086
+MD5sum: 294d10114bc205ad60a00dd4e5a9993c
+SHA1: b22771d748364bdf70a3983153c27054ec4c7862
+SHA256: ba9384ecab2e331db9768cbcdff7c4c0e9b534f8d1e04acbace082e81257541b
 Section: devel
 Priority: optional
 Homepage: https://github.com/fastfetch-cli/fastfetch
