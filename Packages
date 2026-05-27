@@ -1,14 +1,14 @@
 Package: fastfetch
 Version: 2.63.1
-Architecture: armhf
+Architecture: ppc64el
 Maintainer: Carter Li <zhangsongcui@live.cn>
-Installed-Size: 12999
+Installed-Size: 14871
 Depends: libc6 (>= 2.35)
-Filename: v2.63.1/fastfetch_2.63.1-repo1_armhf.deb
-Size: 3876162
-MD5sum: 1798993cf56f49212d91b0ac16a7e5cc
-SHA1: 77a11ca93ac1b271f97358954484cecb5c7dc72b
-SHA256: 91d914f27a88a67aa40cbd8ac097c62675a639d8f1e86d152e719d35bdd9e2a9
+Filename: v2.63.1/fastfetch_2.63.1-repo1_ppc64el.deb
+Size: 4007142
+MD5sum: 8e0d6f321aa3605ce17d6471a87bee43
+SHA1: 29c6d970fc572648d754b1ec19fbdc13c661bd71
+SHA256: 653dd2924d18486c7f0c76497a430aabbae97ba4a044f91824255c2b6dfea656
 Section: devel
 Priority: optional
 Homepage: https://github.com/fastfetch-cli/fastfetch
@@ -22,10 +22,10 @@ Maintainer: Carter Li <zhangsongcui@live.cn>
 Installed-Size: 15356
 Depends: libc6 (>= 2.35)
 Filename: v2.63.1/fastfetch_2.63.1-repo1_arm64.deb
-Size: 4039426
-MD5sum: e0ba4e24ec60e71b9538abb3b75bd78e
-SHA1: 30cae8a001ff7e9d8370927c40a234b94574c836
-SHA256: ac34034c7fd07cb10cdccbaa01cee952b9f8f316949595e1466a696f5eb2ceeb
+Size: 4029854
+MD5sum: 4e0d2a865b923009358e432da2ab0f52
+SHA1: 75cb86ec94eeaca73149999564a223d0fad730e1
+SHA256: 048463258256aa00147b9510f32ca7e755dd790f5478d89ebb7c20ccdebad8a1
 Section: devel
 Priority: optional
 Homepage: https://github.com/fastfetch-cli/fastfetch
@@ -40,43 +40,9 @@ Installed-Size: 14971
 Depends: libc6 (>= 2.35)
 Filename: v2.63.1/fastfetch_2.63.1-repo1_amd64.deb
 Size: 4125002
-MD5sum: 29d2441e256c6e25faf03d2451177c85
-SHA1: fe4af21e25106fdef83424d4cce57b8cff3e2c30
-SHA256: 27ac9ddfb0b7d14d74556d40283a6f3cec30408070f0692da924c637fa0c2699
-Section: devel
-Priority: optional
-Homepage: https://github.com/fastfetch-cli/fastfetch
-Description: Fast neofetch-like system information tool
- fastfetch is a neofetch-like tool for fetching system information and displaying them in a pretty way. It is written mostly in C to achieve much better performance.
-
-Package: fastfetch
-Version: 2.63.1
-Architecture: ppc64el
-Maintainer: Carter Li <zhangsongcui@live.cn>
-Installed-Size: 14871
-Depends: libc6 (>= 2.35)
-Filename: v2.63.1/fastfetch_2.63.1-repo1_ppc64el.deb
-Size: 4006694
-MD5sum: e7d09e06f1851b65b2d6c88c0fbde457
-SHA1: 3f720def3c245d763c36ba77ae6dd8dead9a5fea
-SHA256: b8734d77209742e2d157351e2d6a7f52f8921f351ab01a8e20f9e4e9263c8225
-Section: devel
-Priority: optional
-Homepage: https://github.com/fastfetch-cli/fastfetch
-Description: Fast neofetch-like system information tool
- fastfetch is a neofetch-like tool for fetching system information and displaying them in a pretty way. It is written mostly in C to achieve much better performance.
-
-Package: fastfetch
-Version: 2.63.1
-Architecture: i386
-Maintainer: Carter Li <zhangsongcui@live.cn>
-Installed-Size: 14666
-Depends: libc6 (>= 2.35)
-Filename: v2.63.1/fastfetch_2.63.1-repo1_i386.deb
-Size: 4286054
-MD5sum: 50fdcdd51dc8b9bd26d197ce5e257fc1
-SHA1: 2cf3fd84368a8cf2dd443b3da2da28f6fd1e29be
-SHA256: 680cd528286c946ce3625650e5fec36d56914f984f8c4aed1231539978109e3d
+MD5sum: 63a4402233797fb2ab9346ba6b002ddb
+SHA1: 7d721717a7c005e57664d70c2fff2e1a6718b190
+SHA256: f640b1e1d70320ccb55a22c62a6cfe6032d966709105268156fb057e7bbdd4e3
 Section: devel
 Priority: optional
 Homepage: https://github.com/fastfetch-cli/fastfetch
@@ -90,10 +56,27 @@ Maintainer: Carter Li <zhangsongcui@live.cn>
 Installed-Size: 14310
 Depends: libc6 (>= 2.35)
 Filename: v2.63.1/fastfetch_2.63.1-repo1_s390x.deb
-Size: 3945138
-MD5sum: 3a98d4c1a6d5bb71b4a783e00a88cba8
-SHA1: 0a3591f03faf4b5a8643dd3863e40c3dce64a6cc
-SHA256: 4aa59edddf8fb64b98fb5948ead9ae06a7dc4579db980dec13c1166fe168d778
+Size: 3945178
+MD5sum: 43d30df97fc596fc30db5765efc1c987
+SHA1: f63b98d9c65418c7b4a2ffd6ede0b50fc6482ce6
+SHA256: a35219ddb4d63ea122c177ba152e4fe8255430c3e5941b2d6db5ce7b55f3a339
+Section: devel
+Priority: optional
+Homepage: https://github.com/fastfetch-cli/fastfetch
+Description: Fast neofetch-like system information tool
+ fastfetch is a neofetch-like tool for fetching system information and displaying them in a pretty way. It is written mostly in C to achieve much better performance.
+
+Package: fastfetch
+Version: 2.63.1
+Architecture: i386
+Maintainer: Carter Li <zhangsongcui@live.cn>
+Installed-Size: 14666
+Depends: libc6 (>= 2.35)
+Filename: v2.63.1/fastfetch_2.63.1-repo1_i386.deb
+Size: 4286048
+MD5sum: 10d38646e657c51867e981e66059d269
+SHA1: 348f67cb802122b661f8d2eead3026396b79a324
+SHA256: d7b373395f03e60eb517e03a7b9d49472b60e810db44fae42041d5fa6bd934db
 Section: devel
 Priority: optional
 Homepage: https://github.com/fastfetch-cli/fastfetch
@@ -107,10 +90,27 @@ Maintainer: Carter Li <zhangsongcui@live.cn>
 Installed-Size: 16676
 Depends: libc6 (>= 2.35)
 Filename: v2.63.1/fastfetch_2.63.1-repo1_riscv64.deb
-Size: 3911948
-MD5sum: 471fc0bf17d6692c47e8eda08974a953
-SHA1: b65ce26abecd3175c1994744f700143fc55253cb
-SHA256: 1faa07553fdf3830bc8c2351c91ae7172208b781c0efd6b0cfa760092cfd363c
+Size: 3910304
+MD5sum: b799361c9b242f91c8eff7a0de4c7994
+SHA1: f096059851e3fc57ebc9fbc3873eceddc794ede6
+SHA256: 5658a98fb240b309321e6a57f3495e61c2e6620cdc53bcc66e5860fe49988baa
+Section: devel
+Priority: optional
+Homepage: https://github.com/fastfetch-cli/fastfetch
+Description: Fast neofetch-like system information tool
+ fastfetch is a neofetch-like tool for fetching system information and displaying them in a pretty way. It is written mostly in C to achieve much better performance.
+
+Package: fastfetch
+Version: 2.63.1
+Architecture: armhf
+Maintainer: Carter Li <zhangsongcui@live.cn>
+Installed-Size: 12999
+Depends: libc6 (>= 2.35)
+Filename: v2.63.1/fastfetch_2.63.1-repo1_armhf.deb
+Size: 3876224
+MD5sum: 9e92e2a994853984413a326107551c8b
+SHA1: 3b1161a23acf1db98df55a83724fb898fa3652cd
+SHA256: 9c9a7e4ab908414f6ba634a186aed44a4f6b62471f30ca19282c78806b88c95a
 Section: devel
 Priority: optional
 Homepage: https://github.com/fastfetch-cli/fastfetch
