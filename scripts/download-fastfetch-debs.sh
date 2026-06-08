@@ -1,53 +1,72 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -Eeuo pipefail
 
-# Descarga JSON de la última release de fastfetch-cli
 API_URL="https://api.github.com/repos/fastfetch-cli/fastfetch/releases/latest"
 
 if [[ -z "${GH_TOKEN:-}" ]]; then
-  echo "Falta GH_TOKEN en el entorno"; exit 1
+    echo "Falta GH_TOKEN"
+    exit 1
 fi
 
 mkdir -p repo
 
-echo "Obteniendo metadatos de la última release desde GitHub API..."
-curl --fail --show-error --location --retry 3 --retry-delay 2 \
+echo "Obteniendo metadatos de la última release..."
+
+curl \
+  --fail \
+  --show-error \
+  --location \
+  --retry 10 \
+  --retry-all-errors \
+  --retry-delay 5 \
   -H "Authorization: Bearer $GH_TOKEN" \
   -H "Accept: application/vnd.github+json" \
-  -H "User-Agent: gh-actions-fastfetch" \
-  -o /tmp/release.json "$API_URL"
+  -H "User-Agent: fastfetch-repo-builder" \
+  -o /tmp/release.json \
+  "$API_URL"
 
 LAST_VERSION=$(jq -r '.tag_name' /tmp/release.json)
-if [[ -z "$LAST_VERSION" || "$LAST_VERSION" == "null" ]]; then
-  echo "No se pudo obtener el tag de la última release"; exit 1
-fi
 
-echo "Última versión detectada: $LAST_VERSION"
+[[ -n "$LAST_VERSION" && "$LAST_VERSION" != "null" ]] || exit 1
+
+echo "Versión detectada: $LAST_VERSION"
 echo "LAST_VERSION=$LAST_VERSION" >> "$GITHUB_ENV"
 
 mkdir -p "repo/v${LAST_VERSION}"
-rm -f repo/*.deb || true
 
-# Extrae URLs de assets .deb, con filtro opcional por arquitectura
 if [[ -n "${APT_ARCH_FILTER:-}" ]]; then
-  echo "Usando filtro de arquitecturas: '${APT_ARCH_FILTER}'"
-  jq -r --arg re "$APT_ARCH_FILTER" \
-    '.assets[] | select(.browser_download_url | endswith(".deb")) | select(.name | test($re)) | .browser_download_url' \
-    /tmp/release.json > /tmp/deb_urls.txt
+    jq -r --arg re "$APT_ARCH_FILTER" '.assets[] | select(.name|endswith(".deb")) | select(.name|test($re)) | "\(.id)|\(.name)"' /tmp/release.json > /tmp/assets.txt
 else
-  jq -r '.assets[].browser_download_url | select(endswith(".deb"))' \
-    /tmp/release.json > /tmp/deb_urls.txt
+    jq -r '.assets[] | select(.name|endswith(".deb")) | "\(.id)|\(.name)"' /tmp/release.json > /tmp/assets.txt
 fi
 
-if [[ ! -s /tmp/deb_urls.txt ]]; then
-  echo "No hay assets .deb en la release $LAST_VERSION (filtro: '${APT_ARCH_FILTER:-}')"
-  exit 1
-fi
+SUCCESS=0
 
-echo "Descargando paquetes .deb:"
-while IFS= read -r url; do
-  file="repo/$(basename "$url")"
-  echo "  - $(basename "$url")"
-  curl --fail --show-error --location --retry 3 --retry-delay 2 \
-    -o "$file" "$url"
-done < /tmp/deb_urls.txt
+while IFS="|" read -r asset_id asset_name; do
+    [[ -n "$asset_id" ]] || continue
+
+    output="repo/$asset_name"
+
+    if curl \
+        --fail \
+        --show-error \
+        --location \
+        --retry 10 \
+        --retry-all-errors \
+        --retry-delay 5 \
+        --connect-timeout 30 \
+        --max-time 1800 \
+        -H "Authorization: Bearer $GH_TOKEN" \
+        -H "Accept: application/octet-stream" \
+        "https://api.github.com/repos/fastfetch-cli/fastfetch/releases/assets/$asset_id" \
+        -o "$output"
+    then
+        if dpkg-deb --info "$output" >/dev/null 2>&1; then
+            SUCCESS=1
+        else
+            rm -f "$output"
+        fi
+    fi
+done < /tmp/assets.txt
+
+[[ "$SUCCESS" -eq 1 ]] || { echo "No se descargó ningún paquete válido"; exit 1; }

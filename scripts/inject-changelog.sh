@@ -17,7 +17,7 @@ echo "Inyectando changelog en los .deb para la versión ${LAST_VERSION}..."
 # 1) tag concreto
 # 2) main
 # 3) master
-if ! curl -fsSL \
+if ! curl --fail --show-error --location --retry 10 --retry-all-errors --retry-delay 5 \
   "https://raw.githubusercontent.com/fastfetch-cli/fastfetch/${LAST_VERSION}/CHANGELOG.md" \
   -o /tmp/CHANGELOG.md; then
   if ! curl -fsSL \

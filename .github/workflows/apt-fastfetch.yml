@@ -22,6 +22,7 @@ jobs:
     # Solo publica desde main (evita ramas/forks)
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    timeout-minutes: 60
 
     # Permiso mínimo necesario para publicar en gh-pages
     permissions:
@@ -30,7 +31,7 @@ jobs:
     env:
       # Opcional: filtra arquitecturas (por nombre del .deb). Deja vacío para todas.
       # Ejemplo: "amd64|arm64"
-      APT_ARCH_FILTER: ${{ inputs.arch_filter || '' }}
+      APT_ARCH_FILTER: ${{ inputs.arch_filter || 'amd64' }}
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     defaults:
@@ -39,7 +40,7 @@ jobs:
 
     steps:
     - name: Checkout repositorio
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       # TODO: Opcional: fijar por SHA para supply-chain
 
     - name: Instalar herramientas necesarias
