@@ -83,6 +83,50 @@ jobs:
         echo "KEY_FP=$KEY_FP" >> "$GITHUB_ENV"
 
 
+    - name: Diagnóstico GPG
+      env:
+        GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+      run: |
+        set -euo pipefail
+
+        export GNUPGHOME="${RUNNER_TEMP}/gnupg"
+
+        echo "===== GPG VERSION ====="
+        gpg --version | head -n 2
+
+        echo
+        echo "===== SECRET KEYS ====="
+        gpg --batch --list-secret-keys --keyid-format LONG
+
+        echo
+        echo "===== SECRET KEYS + CAPABILITIES ====="
+        gpg --batch --list-secret-keys --with-colons
+
+        echo
+        echo "===== KEY_FP ====="
+        echo "KEY_FP=${KEY_FP}"
+
+        echo
+        echo "===== KEY DETAILS ====="
+        gpg --batch --list-secret-keys \
+          --with-subkey-fingerprint \
+          --keyid-format LONG \
+          "$KEY_FP"
+
+        echo
+        echo "===== TEST SIGN ====="
+        echo "Prueba GPG" > "${RUNNER_TEMP}/gpg-test.txt"
+
+        gpg --batch \
+          --pinentry-mode loopback \
+          --passphrase "$GPG_PASSPHRASE" \
+          --local-user "$KEY_FP" \
+          --detach-sign \
+          "${RUNNER_TEMP}/gpg-test.txt"
+
+        echo "OK: La clave puede firmar correctamente"
+
+
     - name: Crear índices del repo y firmar
       env:
         GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
