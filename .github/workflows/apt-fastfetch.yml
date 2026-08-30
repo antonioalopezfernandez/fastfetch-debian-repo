@@ -73,7 +73,7 @@ jobs:
         chmod 700 "$GNUPGHOME"
         echo "pinentry-mode loopback" >> "$GNUPGHOME/gpg.conf"
 
-        echo "$GPG_PRIVATE_KEY" | gpg --batch --import
+        printf '%s\n' "$GPG_PRIVATE_KEY" | gpg --batch --import
 
         KEY_FP=$(gpg --list-secret-keys --with-colons | awk -F: '/^sec:/ {print $5; exit}')
         if [[ -z "${KEY_FP}" ]]; then

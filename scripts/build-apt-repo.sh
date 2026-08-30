@@ -33,13 +33,23 @@ EOF
 # Genera Release
 apt-ftparchive -c=apt.conf release . > Release
 
+# Verifica que la clave privada seleccionada está disponible
+echo "Clave GPG seleccionada: $KEY_FP"
+if ! gpg --batch --list-secret-keys "$KEY_FP" >/dev/null 2>&1; then
+  echo "ERROR: no se encuentra la clave privada $KEY_FP"
+  exit 1
+fi
+
 # Firma Release → Release.gpg e InRelease
 gpg --batch --yes --pinentry-mode loopback \
     --passphrase "$GPG_PASSPHRASE" \
-    -abs -o Release.gpg Release
+    --local-user "$KEY_FP" \
+    --detach-sign --armor \
+    -o Release.gpg Release
 
 gpg --batch --yes --pinentry-mode loopback \
     --passphrase "$GPG_PASSPHRASE" \
+    --local-user "$KEY_FP" \
     --clearsign -o InRelease Release
 
 # Exporta la clave pública (ASCII armor)
