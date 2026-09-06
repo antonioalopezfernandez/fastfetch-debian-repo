@@ -5,10 +5,10 @@ Maintainer: Carter Li <zhangsongcui@live.cn>
 Installed-Size: 19354
 Depends: libc6 (>= 2.35)
 Filename: v2.68.1/fastfetch_2.68.1-repo1_amd64.deb
-Size: 5573778
-MD5sum: 999f80b413e7514c81e874715846d278
-SHA1: 9104135c9a98a1978ef4bb146e63d43cdb3499fd
-SHA256: c812e7c8d33084ee65c877e041963a18c832e20266ac1b1433e48d59f225dc10
+Size: 5573348
+MD5sum: c71c37b5436945337a22389994a2cc29
+SHA1: 0d2dd336fabbed9c8767a990b389f574ccd90120
+SHA256: 9078907f6edfcce9c29a4047a25f5ce628d28dc89b80f6adcb68c0a2956fa31e
 Section: devel
 Priority: optional
 Homepage: https://github.com/fastfetch-cli/fastfetch
