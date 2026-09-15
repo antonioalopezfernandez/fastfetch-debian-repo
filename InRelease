@@ -2,39 +2,39 @@
 Hash: SHA512
 
 Codename: fastfetch
-Date: Mon, 14 Sep 2026 07:48:13 +0000
+Date: Tue, 15 Sep 2026 07:33:58 +0000
 Label: fastfetch
 Origin: fastfetch (community mirror)
 Suite: stable
 MD5Sum:
- aba0ff147b231108208741fbeb029e5f              683 Packages
- e8ffbc409b1396aa30c3d888da8cfdd2              475 Packages.gz
- 9a17a426e78e16974c46ba5aaf112c95              126 Release
+ f485eb104d2f99ce94735c3149f29216              683 Packages
+ 534ea69316bebe9f40e5323152a5bb04              475 Packages.gz
+ d4adf68b05e6159bc255bc9ea3b76f60              126 Release
 SHA1:
- 32613ee51a6cbabc82ded6b2eabc8e7d10b6bac6              683 Packages
- 2b90127c9c3bef8484ba7801c91708356ae3911f              475 Packages.gz
- 2de752ea32bcc181e517de33e31fc822b27aa7b0              126 Release
+ 9b0013dbe42420ddfe1426d55760588c5f453230              683 Packages
+ 9a47f8a07ae0d5cc92f4ed88f7bda94ce4155b2d              475 Packages.gz
+ 011d027b309075238e4ed224934fdd570b95fbf4              126 Release
 SHA256:
- 4537b780ee13f9b59af382887c3d379305fcca0cd9a87487444f043fee3e6bd2              683 Packages
- 15771e166dc99e63a57e71f88295dde6d6bc0ec2101b3512cea1f508881c0dc4              475 Packages.gz
- 30c30b8aec453a5e2320df7e97d18b9e3655e03e7a6e264f04b55eef5e31e262              126 Release
+ 60f04b1bf93eb57ed541e11977635f8b3577c86cdf98e631a6002042a8ef83b0              683 Packages
+ 4c3d1c52461ef0ab608604304b1c947f2975e8cefbb3f53925700144b7e6c4d8              475 Packages.gz
+ dbf79c2a8e1191b9d731cfb30b9fc2ae70e71a7b12fed612485df33e28444e49              126 Release
 SHA512:
- 71dad944ad4884f2ca3db36bd1ac2a76f1d8e134f464531aa69017c08fd87e06323ac5ec10e4bce3b7d7001badcc4d2e325043b2bbd22bbd6c8e9c6ee732d7db              683 Packages
- a19eb97c8360ae7141e34c81a645e941ac9293a08be397d48bb100768fe161bf56206723eda0449182243cfe3ea8b0c9cb7855a8c0d408a6dfd8a948ec189df8              475 Packages.gz
- f51961d338d29a6ca7c2f821f8133bb49c40f5e8ecb762dbbce2bd1c549f933dfd7c6428bcd0825eb678db616e06362fc5b1cc1f022169cdc7528acd1cafc2c8              126 Release
+ 59673454aa1b354a78c83b8fab7af3a496e8b027bc7612a0023b72e71fa4de32527206ee5b0ffe4a379ffba93c0bee5d150a69159b8b7f9606a231f81c919351              683 Packages
+ 805b6553a3a80fcbbaad7d393e8a9e04d8fd59c28f1571e61f147f36a2e22a07c289ad6c58dbc5beddcc80805632204ea6873c7faa86cc004c31d4b702c9a495              475 Packages.gz
+ 919713eb14d26e011b567debaadb1d417b7d8c91c140cb87023850fed659628648f4dc6d76da167de1ab3917ec69a962e4886d737035d51c13977a0466ebf773              126 Release
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCgAdFiEEZWIIkhYih16tGNj9Vs8G5EIVw6IFAmqnpr4ACgkQVs8G5EIV
-w6KLMBAAgG9LTDzq3D9N2+VtdXGYpuj8N37XZqKcBPbcajGRp2DLL3AYhnWxRetz
-FQcFirh0ee/2mK4TekIPQhrSaBY5OngJGZPMWRBZ7vo2qPOHsu1kZhZU7551nHaI
-GFKOeo1SoSgwlkdz0ox45U+cR2ss8xKplxBbedx4gCQNoxLiNWNXiffHmzMMl/8P
-JKYQrbjEMS9+EQmaPA7X/S05Sl1b9USbK3TQmkIELZA339Go3+5OBQfE37KtEdrZ
-7ZHnEyspnjEK28kxZ9krROMIa4sVRxM0m83eJSVTHK7ib4FW9RnfPUO8egxfNRFE
-4yrcz6ofUUwkb78NmQ7Hw9yT+By4XQP1MVwRhefVl+s5t4/4IaW38t2ZXJFtdLtm
-sFBAm3/j5b1Itv3L2Bj3Ik7b1Zm/cL5FY6UsMrK9U8SC3LM1FRqTD5gHlZGJH2Pj
-9d/fQHEblj/pvjIxCqHZcvFqLkw/GtYULQuCAnNk+yZDgn9/qUI0fN0q9ca9GZ2B
-dsA1EZ2ZA7fX1fpP34LEnry1LNP2KIiqXtVQMgCPjaetPqwv5msQzZ7qtzvUK4Rz
-KFCyEykJRf4A5xu51a+ND8IROpyT8uoweuVU7yqD1NDX7bvdpGspwr97wHC7ro8Q
-MlT7RuAwVhwOrilJi4dqWYMn+mpCdaEBymyjSQ1vqNxICMbRO5Y=
-=w9bp
+iQIzBAEBCgAdFiEEZWIIkhYih16tGNj9Vs8G5EIVw6IFAmqo9OcACgkQVs8G5EIV
+w6JOWQ//QSjSPa7nO3l0tQVa2usdZT1QzjoBjdXdObuh+khXK6ZOqlCPiDy9KKIt
+Db1Nw/hzwjCkwLYrJYuP4tj6xsL2IGMfcRidf6L9xd6c9Xr1CB2seK5imuGgCU7Q
+AD0JpMSLE5tYe8OM9IvUpXyALzpc945I0JUUp/X28ULuEHyp+bO0QCPKTz4LvEiX
+CQRw5s90EQn4nZEylUJo+biOBY/hrEdhSd0k70ysnnN7mbzGvCAp3G+w91/H4K4r
+f72aKbaBtIkBcg0gpgOR1ei0EbLk7Oq5yYweeYeSoILKBR27WTu85lqWqV6Asdb6
+Sb+xlASGBqQvgh1tj41kSJxpoIjGTfzr+kAqetyczDKvbpMOExc+Xx8wSIXd/Vfy
+03zQhRobetxOwofNmw0iK9Jta3hBZkROhirRlqED2TObnGzhz6Vkc0SCCo9jd3m7
+2J+B1AM+Ld/1UilTfw1wt7kkVzTcPeFnhZcopayITXC8pCVR/AaqH4BmEEkqsWOH
++GTKTCoIbsnK/PgoU+CdSpVYkRaNFberv0jR08tExdwGzkLSyS6c1fs+ysgZM9z+
+6By/SOvr0FzqxJKey1iRzTTYjt2yONfFqIecyCujp9tPJWCJ3i6sUpdqmKpEhryX
+WJEgGZPIbJ1399kQ4n85YMStU/h6vymFckgRDv2TUzvZsHcANB0=
+=Pm03
 -----END PGP SIGNATURE-----
