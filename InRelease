@@ -2,39 +2,39 @@
 Hash: SHA512
 
 Codename: fastfetch
-Date: Mon, 21 Sep 2026 07:52:03 +0000
+Date: Tue, 22 Sep 2026 07:36:18 +0000
 Label: fastfetch
 Origin: fastfetch (community mirror)
 Suite: stable
 MD5Sum:
- 8675d9dee867fd6aba8149ec43272dec              683 Packages
- 7e541023c7359ec9a07d4fa4929dfff2              475 Packages.gz
- 107fef5223622e42f2485f136635620e              126 Release
+ 42d67fb9398548c25bdba01dc1a0d47b              683 Packages
+ e31e9470e2ff7d9d4cc73bfe7e165260              476 Packages.gz
+ b659333d9ca84a4aab269d279e439dbe              126 Release
 SHA1:
- 34916142e2e8ae236727ddd4e8fb115a68a4ed16              683 Packages
- 52acce5055220800e72fe7e6ac1858b936fddce5              475 Packages.gz
- 009ab4d315ea133d4e9a5a82b7fa2e34a045ad5d              126 Release
+ 5c77a282c7deef857e510141fccd48d62dd7e5a8              683 Packages
+ 5f20a0ef6700a708139c306bcd1df8b3f9490d6e              476 Packages.gz
+ 6c699cbf6dccf133dcec84ef6d656f05a6c3d1b3              126 Release
 SHA256:
- 70c6d3c98e144ac579c54b63049351f4c2a63a20e1b3d6ca1ab896464782f53f              683 Packages
- 3d06aba2acf0d2d241a50949bbbd88d806affbe85733dcfe6eb430bfd5e8e293              475 Packages.gz
- 00deb0d045fbda30b40e4859eb5e8829761553775cf32f3872aa98d5a3e2747e              126 Release
+ 97059b6344e5cd66bd3ea7182821ce894f9677f5828217b909627521e5e5f3bc              683 Packages
+ cc23c9596701e8e3829ff70b6e140e1c2ca2d86a9992831a67c483fa7b7005da              476 Packages.gz
+ aa8552b96687fae9185e025e1926aadb070835a7887f607fa8e31ae69a9b0e33              126 Release
 SHA512:
- 445964d68ccaf246ff4e400ca5477025062a4b82699fbd10788ee0bfe99c0c93ecb7347876673a120e0518c8fb5deb5a7228fd8335ae1d6e87f14f88939d104d              683 Packages
- 18d99e47bc673e9f68fb310d51853f5b0c998b85a6ff0cf3a90b5ccc3d55dc7130b56f37ef3e379fa6ae0debf25dc8ee00d96bf42aa866191e2f76bc88ca4697              475 Packages.gz
- 7d560a21df5becafdf541ae085906bb2c6ac4ced6c4bc8dc85de366fcf0b4854b1c33f5b46b9b8a2faadb08e11ac4d790741f36be7416e432955cd43d4036f15              126 Release
+ d722c30cf10cf31e3222191d58dc2adce948491885e95b1780325ca9ddaff9cdd634307b78066c7605efc7ff7b57bb2fc50681fb63626e254ccd0ec77b9db37d              683 Packages
+ 44275aeb12f07bead2ddeb38fc8fadf45d5fcf23fb0103f9b68abb8b05bc89e0394abb32967b3b244e051c858f1e09a84d4cfb5fd10b311950358e0aa926c639              476 Packages.gz
+ ac12771e7010dcac704354b80c34734cb6fd50a5e137e5cbb237669ec35ab913e7f49e4328b31485c0c191d09edb147f97a7d93a90b01a36f4fd6599cc0211d7              126 Release
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCgAdFiEEZWIIkhYih16tGNj9Vs8G5EIVw6IFAmqw4iMACgkQVs8G5EIV
-w6Kz3hAAljKxD/ArUvRDdQW4le7NkuRuyZGHsauDjL+GG0HaroJQyjkhoBX9DQca
-xIa9RR79q0sayk96P1imkwtCWGH0X1QgZGnVzKJ7nas2ZK7NoKanT4EQkcSQ0Ljp
-CfCZ0GEjExZccwv69r/VcwB+iWulPFOBkm3mI+HSGE3HCt1BsCU4YcG8caQCM7N8
-ArcWFqlYrBkFpbmDQfeEHWdv9Y7Nf6R2M8DpeUnvmxNf/zT/BHLTUXveqdiIx9rG
-ck/G83exlr5TN8j0nQ8MLLLIjBWdJ0m8ojuw23Jp5kBKKKTT7+NEfFK8ou7unLrN
-geKFWkFZO1vjlOcWi7L2LXUTE9f2SfY3Nitn4U61mfsTgiSmMdzZoNem5qeAyHbL
-I2lzHtwZcXSFfcZLudwcmU5Ln8hXHoGZnoxcAjG3YsxKw0Z6lA9tmqlZWSzL4IlA
-+N/oFZM4jSkd45ut2Alq2F+RX+LsGbx/O2rJjdxbZkrEi8b3toAJGnoZwjZ50fwV
-tCJA1tFqv5uEL4Jz2Olc/BZIXDx42W3dnIdnjJzHRrstaK19yIogpZUNmV7yCSE3
-D/u5SPlwoSwQmTXFyZlWmSGacFeGoguA7h3pmQO354JTqgD5b8nSWJ/uAHsVXi5c
-MjpFp803IFX8l/Re6hZMfDXogo8OzTbEu6kW+VgMl4eNgc02TwQ=
-=hG5q
+iQIzBAEBCgAdFiEEZWIIkhYih16tGNj9Vs8G5EIVw6IFAmqyL/IACgkQVs8G5EIV
+w6LK0BAAgF1bFVU8ndKSTiqVGa9hd6SEin2NhqIZGLOYpdwddFRePI28NUc1wRY9
+QJbighlzRsgvoEzuRIlWFoq1W3VHLiIazNEE4zydEssFJxFEL7P1B7+olG9D81OD
+jsp5g/YZV24Pvy0hcbdxgJE3DURrWKi7K9aiaxE7ByuQ4B+bKH5J4SHRR7gc+S6V
+urqU+gjZqTjgQhu1hiCIBXkWmhBHN8RhVtQOZpzZc+FKEZTvCCE9ICk2pCC8fm6Y
+1xmULRL3sp2PUAtnmMPsIa/5fqrveuuctOjFcn0Pju5//3xORCBkTOoXcRmm+D1R
+/W8WaJsYJ3Nv1djVLDQkIjGMRq82Bs4NqigjTuv91/lVl6XRagTr3aNZ+wEtq+WX
+WqhcLxw59DHligXUP0vO2KTrK8iqJyDII4gVE1nxF0Vfc45udACVQfgqcexDvAGS
+z3PiEwLVkatRgIO7thF5fW5cnlSWmiKoCXiwN+rUbOMRKhJmo4/8aW5JNh4Furvc
+8H53N+1WSqdS4fQ9RNbq/+l70KsmOqEmuKQV28m/gwg6HSR9069f+xTwbaPDbIG1
+WAb0LR0aA1N0cdA24Fa5VANnoQXduOz8a8X/PJDmkNMal/93ua8Xuanl6zu5kZ8y
+Jgu40z03lQbTBo7DEIJnPNf6FWEuenlImVz6MEFZ+GsluKdGUqk=
+=hG7b
 -----END PGP SIGNATURE-----
